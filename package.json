@@ -2,17 +2,24 @@
   "name": "backend",
   "version": "0.0.1",
   "description": "backend for dissertation project",
-  "main": "index.js",
+  "exports": "./index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "dev": "nodemon index.js"
   },
   "author": "rv-bit",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.35.2",
     "express": "^4.21.1",
     "express-async-handler": "^1.2.0",
+    "mysql2": "^3.11.3",
     "nodemon": "^3.1.7"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.26.2"
   }
 }

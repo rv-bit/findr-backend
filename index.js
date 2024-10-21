@@ -1,14 +1,17 @@
-const express = require('express');
+import * as dotenv from 'dotenv';
+import express from 'express';
+import http from 'http';
+
+import cors from 'cors';
+import path from 'path';
+import bodyParser from 'body-parser';
+
+import db from './services/database.js';
+
+import testRouter from './routes/test.js';
+
 const app = express();
-
-const server = require('http').Server(app);
-const db = require('./services/database');
-
-const cors = require('cors');
-const path = require('path');
-const bodyParser = require('body-parser');
-
-const testRouter = require('./routes/test');
+const server = http.Server(app);
 
 const PORT = process.env.PORT || 5001;
 
@@ -28,4 +31,6 @@ app.use('/test', testRouter);
 
 server.listen(PORT, () => {
     console.log(`Server listening on ${PORT}`);
+
+    console.log('Database connection established', db);
 });
