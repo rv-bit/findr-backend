@@ -2,24 +2,36 @@
   "name": "backend",
   "version": "0.0.1",
   "description": "backend for dissertation project",
-  "exports": "./index.js",
+  "private": true,
   "type": "module",
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
-    "dev": "nodemon index.js"
+    "start": "npx tsc && node dist/index.js",
+    "dev": "nodemon src/index.ts",
+    "drizzle:generate": "tsc -p tsconfig.json && drizzle-kit generate --config=drizzle.config.ts",
+    "drizzle:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "author": "rv-bit",
   "license": "ISC",
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.7.2",
+    "@auth/express": "^0.8.2",
+    "axios": "^1.7.7",
+    "better-auth": "^0.5.3-beta.16",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.35.2",
     "express": "^4.21.1",
-    "express-async-handler": "^1.2.0",
-    "mysql2": "^3.11.3",
-    "nodemon": "^3.1.7"
+    "mysql2": "^3.11.3"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.26.2"
+    "@types/cors": "^2.8.17",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.0",
+    "concurrently": "^9.0.1",
+    "drizzle-kit": "^0.26.2",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
   }
 }
