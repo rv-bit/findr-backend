@@ -5,7 +5,7 @@ import cors from 'cors';
 import path from 'path';
 
 import { toNodeHandler, fromNodeHeaders } from "better-auth/node"; // Better Auth handler
-import { auth } from "./utils/index.js";  // Your auth config
+import { auth, limiter } from "./utils/index.js";  // Your auth config
 import routes from './routes/index.js';  // Your other routes
 
 const app = express();
@@ -18,6 +18,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(limiter); // Apply rate limiting for all routes
 
 if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "docker") {
     app.use(express.static(path.join(__dirname, '../dist')));
