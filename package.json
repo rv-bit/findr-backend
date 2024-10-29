@@ -17,12 +17,14 @@
     "@auth/drizzle-adapter": "^1.7.2",
     "@auth/express": "^0.8.2",
     "axios": "^1.7.7",
-    "better-auth": "^0.5.3-beta.16",
+    "better-auth": "^0.6.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.35.2",
+    "drizzle-orm": "^0.35.3",
     "express": "^4.21.1",
-    "mysql2": "^3.11.3"
+    "express-rate-limit": "^7.4.1",
+    "mysql2": "^3.11.3",
+    "npm-check-updates": "^17.1.9"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
