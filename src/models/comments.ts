@@ -1,7 +1,7 @@
 import * as t from "drizzle-orm/mysql-core";
 import { mysqlTable as table } from "drizzle-orm/mysql-core";
 
-import { user } from "./auth-schema.js";
+import { user } from "./auth.js";
 import { posts } from "./posts.js";
 
 export const comments = table("comments", {

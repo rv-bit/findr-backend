@@ -2,7 +2,7 @@ import * as t from "drizzle-orm/mysql-core";
 import { mysqlTable as table } from "drizzle-orm/mysql-core";
 
 import { generateUniqueString } from "./utils/index.js";
-import { user } from "./auth-schema.js";
+import { user } from "./auth.js";
 
 export const posts = table(
     "posts",
