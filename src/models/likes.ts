@@ -1,4 +1,4 @@
-import { mysqlTable as table, varchar, int, timestamp, text, boolean } from "drizzle-orm/mysql-core";
+import { mysqlTable as table, varchar, int, timestamp } from "drizzle-orm/mysql-core";
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm'
 
 import { user } from "./auth.js";
