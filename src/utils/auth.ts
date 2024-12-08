@@ -13,7 +13,7 @@ export const auth = betterAuth({
     }),
 
     trustedOrigins: process.env.BETTER_TRUSTED_ORIGINS?.split(",") || ["http://localhost:3000"],
-    baseURL: process.env.BASE_URL || "http://localhost:3000",
+    baseURL: process.env.NODE_ENV === "development" ? process.env.BASE_URL : process.env.RAILWAY_PRIVATE_DOMAIN || "http://localhost:3000",
 
     emailAndPassword: {
         enabled: true,
@@ -23,7 +23,8 @@ export const auth = betterAuth({
         github: {
             clientId: process.env.GITHUB_CLIENT_ID as string,
             clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-            redirectURI: process.env.BASE_URL + "/api/auth/callback/github/",
+            redirectURI: process.env.NODE_ENV === "development" ? process.env.BASE_URL + "/api/auth/callback/github/" : process.env.RAILWAY_PRIVATE_DOMAIN + "/api/auth/callback/github/",
+
         }
     },
 
