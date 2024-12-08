@@ -21,6 +21,7 @@ app.use(cors(corsOptions));
 app.use(limiter); // Apply rate limiting for all routes
 
 if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "docker") {
+    const __dirname = path.resolve();
     app.use(express.static(path.join(__dirname, '../dist')));
 }
 
