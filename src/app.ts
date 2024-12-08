@@ -17,6 +17,7 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization'],  // Ensure necessary headers are allowed
 };
 
+app.set('trust proxy', 1); // Trust first proxy
 app.use(cors(corsOptions));
 app.use(limiter); // Apply rate limiting for all routes
 
