@@ -1,0 +1,122 @@
+entity-relationship-diagram
+
+users [icon: user, color: blue] {
+  id varchar pk
+  name string
+  email varchar
+  emailVerified boolean
+  image varchar
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+session [icon: user, color: blue] {
+  id varchar pk
+  expiresAt timestamp
+  ipAddress string
+  userAgent string
+  userId varchar fk
+}
+
+account [icon: user, color: blue] {
+  id varchar pk
+  accountId string
+  providerid string
+  userId varchar fk
+  accessToken string
+  refreshToken string
+  idToken string
+  expiresAt timestamp
+  password string
+}
+
+verification [icon: mail, color: blue] {
+  id varchar pk
+  identifier string
+  value string
+  expiresAt timestamp
+}
+
+followers [icon: users, color: green] {
+  followerId varchar fk
+  followingId varchar fk
+  followedAt timestamp
+}
+
+posts [icon: twitter, color: yellow] {
+  id int pk
+  slug varchar
+  title varchar
+  userId varchar fk
+} 
+
+likes [icon: heart, color: yellow] {
+  id int pk
+  postId int fk
+  userId varchar fk
+  createdAt timestamp
+}
+
+comments [icon: comment, color: yellow] {
+  id int pk
+  postId int fk
+  text varchar
+  userId varchar fk
+}
+
+shares [icon: share, color: yellow] {
+  id int pk
+  postId int fk
+  userId varchar fk
+  createdAt timestamp
+}
+
+messages [icon: message-circle, color: orange] {
+  id int pk
+  senderId varchar fk
+  receiverId varchar fk
+  messageText text
+  sentAt timestamp
+  isRead boolean
+}
+
+session.userId > users.id 
+// Each session is associated with a user
+account.userId > users.id 
+// Each account is associated with a user
+
+users.id < posts.userId 
+// A user can create multiple posts
+users.id < comments.userId 
+// A user can make multiple comments
+users.id < likes.userId 
+// A user can like multiple posts
+users.id < shares.userId 
+// A user can share multiple posts
+
+users.id <> messages.senderId 
+// Users can send messages to each other (sender)
+users.id <> messages.receiverId 
+// Users can send messages to each other (receiver)
+
+users.id <> followers.followerId 
+// Represents a follower-following relationship
+users.id <> followers.followingId 
+// Represents a follower-following relationship
+
+posts.id < comments.postId 
+// A post can have multiple comments
+posts.id < likes.postId
+// A post can have multiple likes
+posts.id < shares.postId
+// A post can be shared multiple times
+
+likes.postId > posts.id
+// Each like is associated with a single post
+shares.postId > posts.id
+// Each share is associated with a single post
+
+messages.senderId > users.id
+// Each message has a sender user
+messages.receiverId > users.id
+// Each message has a receiver user
