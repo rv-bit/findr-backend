@@ -18,8 +18,8 @@ importers:
         specifier: ^1.7.9
         version: 1.7.9
       better-auth:
-        specifier: ^1.0.19
-        version: 1.0.19
+        specifier: ^1.0.20
+        version: 1.0.20
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -711,8 +711,8 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
-  better-auth@1.0.19:
-    resolution: {integrity: sha512-P8K8xXfWM5ghacSPiZTcZ2whdifM7JzUyrdDhxFLPqkreoQTTri3FmYXkXK4WvueidmVSfRa/t0q48g/kKaQ/w==}
+  better-auth@1.0.20:
+    resolution: {integrity: sha512-12yQNRLP5zsBIKHfCnTTW1Gz6Z+Q78TU3bCzPLYCIcjv9INDJOnZzXbub0L4MuNPTKjRDqBT9PV3kDzqA6LIGg==}
 
   better-call@0.3.3-beta.4:
     resolution: {integrity: sha512-txigUTFsjOlE4dfkfhDhu6Gk0I1Xo3S4Nye+nfMKJXknb+WsymcWtqoRUSUGdhOMumM3LT9R3QttTUxwny9lWQ==}
@@ -2055,7 +2055,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  better-auth@1.0.19:
+  better-auth@1.0.20:
     dependencies:
       '@better-fetch/fetch': 1.1.12
       '@noble/ciphers': 0.6.0
