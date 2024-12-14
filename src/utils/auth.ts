@@ -6,13 +6,17 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import * as schema from '../models/index.js'
 import db from '../services/database.js'
 
+const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
+	return origin.startsWith('http') ? origin : `https://${origin}`
+})
+
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
 		provider: 'mysql',
 		schema: schema,
 	}),
 
-	trustedOrigins: process.env.BETTER_TRUSTED_ORIGINS?.split(',') || ['http://localhost:3000'],
+	trustedOrigins: trustedOrigins || ['http://localhost:3000'],
 
 	emailAndPassword: {
 		enabled: true,
