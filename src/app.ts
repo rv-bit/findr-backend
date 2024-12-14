@@ -13,6 +13,8 @@ const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origi
 	return origin.startsWith('http') ? origin : `https://${origin}`
 })
 
+console.log('Trusted Origins:', trustedOrigins)
+
 const corsOptions = {
 	origin: trustedOrigins,
 	credentials: true, // This ensures that cookies/credentials are allowed
