@@ -1,7 +1,9 @@
 {
 	"name": "findr-6cs007-backend",
 	"version": "0.0.1",
-	"description": "backend for dissertation project",
+	"description": "Backend for the Findr project",
+	"author": "rv-bit",
+	"license": "MIT",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -14,8 +16,6 @@
 		"studio": "drizzle-kit studio --config=drizzle.config.ts",
 		"test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
 	},
-	"author": "rv-bit",
-	"license": "ISC",
 	"dependencies": {
 		"@auth/drizzle-adapter": "^1.7.4",
 		"@auth/express": "^0.8.4",
