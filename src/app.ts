@@ -1,37 +1,37 @@
-import 'dotenv/config';
-import express from 'express';
+import 'dotenv/config'
+import express from 'express'
 
-import cors from 'cors';
-import path from 'path';
+import cors from 'cors'
+import path from 'path'
 
-import { toNodeHandler, fromNodeHeaders } from "better-auth/node"; // Better Auth handler
-import { auth, limiter } from "./utils/index.js";  // Your auth config
-import routes from './routes/index.js';  // Your other routes
+import { toNodeHandler, fromNodeHeaders } from 'better-auth/node' // Better Auth handler
+import { auth, limiter } from './utils/index.js' // Your auth config
+import routes from './routes/index.js' // Your other routes
 
-const app = express();
+const app = express()
 
 const corsOptions = {
-    origin: process.env.BETTER_TRUSTED_ORIGINS?.split(","),
-    credentials: true,  // This ensures that cookies/credentials are allowed
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],  // Ensure necessary headers are allowed
-};
-
-app.set('trust proxy', 1); // Trust first proxy
-app.use(cors(corsOptions));
-app.use(limiter); // Apply rate limiting for all routes
-
-if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "docker") {
-    const __dirname = path.resolve();
-    app.use(express.static(path.join(__dirname, '../dist')));
+	origin: process.env.BETTER_TRUSTED_ORIGINS?.split(','),
+	credentials: true, // This ensures that cookies/credentials are allowed
+	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+	allowedHeaders: ['Content-Type', 'Authorization'], // Ensure necessary headers are allowed
 }
 
-app.use('/api/v1', express.json(), routes);
-app.all("/api/auth/*", toNodeHandler(auth));
+app.set('trust proxy', 1) // Trust first proxy
+app.use(cors(corsOptions))
+app.use(limiter) // Apply rate limiting for all routes
+
+if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'docker') {
+	const __dirname = path.resolve()
+	app.use(express.static(path.join(__dirname, '../dist')))
+}
+
+app.use('/api/v1', express.json(), routes)
+app.all('/api/auth/*', toNodeHandler(auth))
 
 app.use((req, res, next) => {
-    res.status(404).send('Not Found');
-    next();
-});
+	res.status(404).send('Not Found')
+	next()
+})
 
-export default app;
+export default app
