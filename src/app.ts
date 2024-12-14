@@ -27,13 +27,6 @@ if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "docker") 
 }
 
 app.use('/api/v1', express.json(), routes);
-app.get("/api/auth/use-session", async (req: express.Request, res: express.Response): Promise<void> => {
-    const session = await auth.api.getSession({
-        headers: fromNodeHeaders(req.headers),
-    });
-    res.json(session);
-});
-
 app.all("/api/auth/*", toNodeHandler(auth));
 
 app.use((req, res, next) => {
