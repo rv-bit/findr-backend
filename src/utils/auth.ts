@@ -1,6 +1,8 @@
 import 'dotenv/config'
+import { Request } from 'express'
 
 import { betterAuth } from 'better-auth'
+import { fromNodeHeaders } from 'better-auth/node'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 
 import * as schema from '../models/index.js'
@@ -35,3 +37,19 @@ export const auth = betterAuth({
 		updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
 	},
 })
+
+export const userMiddleware = async (request: Request) => {
+	const session = await auth.api.getSession({ headers: fromNodeHeaders(request.headers) })
+
+	if (!session) {
+		return {
+			user: null,
+			session: null,
+		}
+	}
+
+	return {
+		user: session.user,
+		session: session.session,
+	}
+}

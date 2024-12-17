@@ -1,33 +1,19 @@
-import express from 'express';
-import { handler } from '../utils/index.js';
+import { Request, Response } from 'express'
+import { handler, userMiddleware } from '../utils/index.js'
 
-// const insertTest = async (req: express.Request, res: express.Response) => {
-//     let success = false;
+const testRoute = async (req: Request, res: Response): Promise<void> => {
+	const { user, session } = await userMiddleware(req)
 
-//     try {
-//         const idUser = await db.insert(users).values({
-//             id: 'some-id',
-//             name: 'test',
-//             email: 'test@gmail.com',
-//             emailVerified: true,
-//             createdAt: new Date(),
-//             updatedAt: new Date(),
-//         });
+	if (!user) {
+		res.status(401).json({
+			message: 'Unauthorized',
+		})
+		return
+	}
 
-//         return res.status(200).json({
-//             message: 'User inserted successfully' + idUser,
-//         });
-//     } catch (error) {
-//         console.log('Error inserting idUser', error);
+	res.status(200).json({
+		message: 'Hello World!',
+	})
+}
 
-//         return res.status(500).json({
-//             message: 'Error inserting user'
-//         });
-//     }
-// };
-
-export const test = handler(async (req: express.Request, res: express.Response) => {
-    res.status(200).json({
-        message: 'Hello World!',
-    });
-});
+export const test = handler(testRoute)

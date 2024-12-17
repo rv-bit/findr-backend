@@ -4,7 +4,7 @@ import express from 'express'
 import cors from 'cors'
 import path from 'path'
 
-import { toNodeHandler, fromNodeHeaders } from 'better-auth/node' // Better Auth handler
+import { toNodeHandler } from 'better-auth/node' // Better Auth handler
 import { auth, limiter } from './utils/index.js' // Your auth config
 import routes from './routes/index.js' // Your other routes
 
