@@ -22,6 +22,10 @@ COPY --from=development-dependencies-env /app/node_modules /app/node_modules
 WORKDIR /app
 RUN pnpm build
 
+# Generate the database schema using Drizzle
+RUN pnpm generate
+RUN pnpm migrate
+
 # Stage 5: Final stage to run the application
 FROM node:20-alpine
 COPY ./package.json pnpm-lock.yaml drizzle.config.ts /app/
@@ -29,5 +33,4 @@ COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
 WORKDIR /app
 
-# Generate, migrate, and start studio for Drizzle, then start the application
-CMD ["sh", "-c", "pnpm generate && pnpm migrate && pnpm studio & pnpm start"]
+CMD ["pnpm", "start"]
