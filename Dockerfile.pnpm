@@ -1,36 +1,29 @@
-# Stage 1: Install pnpm globally and copy the source code
-FROM node:20-alpine AS dependencies-env
+# Base image
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json, pnpm-lock.yaml, and install dependencies
+COPY package.json pnpm-lock.yaml ./
+
+# Install pnpm globally
 RUN npm install -g pnpm
-COPY . /app
 
-# Stage 2: Install development dependencies
-FROM dependencies-env AS development-dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
-WORKDIR /app
-RUN pnpm install --frozen-lockfile
+# Install dependencies (production and development)
+RUN pnpm install
 
-# Stage 3: Install production dependencies
-FROM dependencies-env AS production-dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
-WORKDIR /app
-RUN pnpm install --prod --frozen-lockfile
+# Copy source files
+COPY . .
 
-# Stage 4: Build the application
-FROM dependencies-env AS build-env
-COPY ./package.json pnpm-lock.yaml /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
+# Ensure TypeScript is compiled
 RUN pnpm build
 
-# Generate the database schema using Drizzle
-RUN pnpm generate
-RUN pnpm migrate
+# Expose port for Express server
+EXPOSE 3000
 
-# Stage 5: Final stage to run the application
-FROM node:20-alpine
-COPY ./package.json pnpm-lock.yaml drizzle.config.ts /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
-WORKDIR /app
+# Set environment variables for Drizzle and MySQL
+ENV NODE_ENV=production
 
+# Default command to run the app
 CMD ["pnpm", "start"]

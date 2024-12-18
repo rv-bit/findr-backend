@@ -7,11 +7,7 @@ export default defineConfig({
 	dialect: 'mysql',
 
 	dbCredentials: {
-		host: process.env.MYSQLHOST!,
-		user: process.env.MYSQLUSER!,
-		password: process.env.MYSQLPASSWORD!,
-		database: process.env.MYSQL_DATABASE!,
-		port: parseInt(process.env.MYSQLPORT || '3306'),
+		url: process.env.MYSQL_URL!,
 	},
 
 	verbose: true,
