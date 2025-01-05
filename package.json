@@ -20,7 +20,7 @@
 		"@auth/drizzle-adapter": "^1.7.4",
 		"@auth/express": "^0.8.4",
 		"axios": "^1.7.9",
-		"better-auth": "^1.0.20",
+		"better-auth": "^1.1.6",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.7",
 		"drizzle-orm": "^0.38.2",
