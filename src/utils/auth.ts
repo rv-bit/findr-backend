@@ -2,11 +2,13 @@ import "dotenv/config";
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { twoFactor, username } from "better-auth/plugins"
 
 import * as schema from "../models/index.js";
 import db from "../services/database.js";
 
 export const auth = betterAuth({
+    name: "Findr",
     database: drizzleAdapter(db, {
         provider: "mysql",
         schema: schema
@@ -30,4 +32,9 @@ export const auth = betterAuth({
         expiresIn: 60 * 60 * 24 * 7, // 7 days
         updateAge: 60 * 60 * 24 // 1 day (every 1 day the session expiration is updated)
     },
+
+    plugins: [
+        twoFactor(),
+        username()
+    ]
 });
