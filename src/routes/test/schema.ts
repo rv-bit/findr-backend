@@ -1,6 +1,6 @@
-import Joi from 'joi';
+import { JoiXss } from "@/utils/utils.js";
 
-export const testSchema = Joi.object({
-    name: Joi.string().required(),
-    email: Joi.string().email().required(),
+export const testSchema = JoiXss.object({
+    name: JoiXss.string().required().xss(), // Sanitize the input to prevent XSS attacks
+    email: JoiXss.string().email().required(),
 });
