@@ -5,7 +5,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { twoFactor, username } from "better-auth/plugins"
 
 import * as schema from "../models/index.js";
-import db from "../services/database.js";
+import db from "../services/db/database.js";
 
 export const auth = betterAuth({
     name: "Findr",
