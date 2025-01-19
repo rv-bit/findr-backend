@@ -1,19 +1,16 @@
 import { Request, Response } from 'express'
 import { handler, userMiddleware } from '../utils/index.js'
 
-const testRoute = async (req: Request, res: Response): Promise<void> => {
-	const { user, session } = await userMiddleware(req)
+export const test = handler(async (req: Request, res: Response) => {
+    res.status(200).json({
+        message: 'Hello World!',
+    });
+});
 
-	if (!user) {
-		res.status(401).json({
-			message: 'Unauthorized',
-		})
-		return
-	}
+export const testPost = handler(async (req: Request, res: Response) => {
+    console.log('Request body:', req.body);
 
-	res.status(200).json({
-		message: 'Hello World!',
-	})
-}
-
-export const test = handler(testRoute)
+    res.status(200).json({
+        message: 'Success',
+    });
+});

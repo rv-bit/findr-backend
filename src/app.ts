@@ -1,12 +1,15 @@
 import 'dotenv/config'
 import express from 'express'
 
-import cors from 'cors'
-import path from 'path'
+import helmet from "helmet";
+import cors from 'cors';
+import path from 'path';
 
-import { toNodeHandler } from 'better-auth/node' // Better Auth handler
-import { auth, limiter } from './utils/index.js' // Your auth config
-import routes from './routes/index.js' // Your other routes
+import { toNodeHandler } from "better-auth/node";
+import { auth, limiter } from "./utils/index.js";
+
+import routes from './routes/index.js';
+import * as middlewares from './middlewares.js';
 
 const app = express()
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
@@ -36,9 +39,7 @@ app.all('/api/auth/*', toNodeHandler(auth))
 app.use(express.json())
 app.use('/api/v1', routes)
 
-app.use((req, res, next) => {
-	res.status(404).send('Not Found')
-	next()
-})
+app.use(middlewares.notFoundHandler);
+app.use(middlewares.errorHandler);
 
 export default app

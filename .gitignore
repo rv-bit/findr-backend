@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # package files
+package-lock.json
 pnpm-lock.yaml
 
 node_modules
@@ -26,9 +27,6 @@ dist-ssr
 *.sln
 *.sw?
 
-*.env
-*.env.local
-*.env.development
-*.env.production
+*.env*
 
 .DS_Store
