@@ -10,7 +10,7 @@
 		"build": "tsc",
 		"dev": "nodemon src/index.ts",
 		"start": "node dist/index.js",
-		"db:generate": "tsc -p tsconfig.json && drizzle-kit generate --config=drizzle.config.ts",
+		"db:generate": "tsc -p tsconfig.json && drizzle-kit generate --config=drizzle-dev.config.ts",
 		"db:migrate": "drizzle-kit migrate --config=drizzle-dev.config.ts",
 		"db:push": "drizzle-kit push --config=drizzle-dev.config.ts",
 		"db:studio": "drizzle-kit studio --config=drizzle-dev.config.ts",
