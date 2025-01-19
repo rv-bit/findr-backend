@@ -1,26 +1,17 @@
-FROM node:lts as dependencies-env
-RUN pnpm i -g pnpm
-COPY . /app
+# Base image
+FROM node:20-alpine
+RUN npm i -g pnpm
 
-FROM dependencies-env AS development-dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
-WORKDIR /app
-RUN pnpm i --frozen-lockfile
+COPY . /app 
 
-FROM dependencies-env AS production-dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
+# Set working directory
 WORKDIR /app
-RUN pnpm i --prod --frozen-lockfile
+RUN pnpm install
 
-FROM dependencies-env AS build-env
-COPY ./package.json pnpm-lock.yaml /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
+# Copy source files
+COPY . .
 RUN pnpm build
 
-FROM dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
-WORKDIR /app
+# Set environment variables for Drizzle and MySQL
+ENV NODE_ENV=production
 CMD ["pnpm", "start:with-db"]
