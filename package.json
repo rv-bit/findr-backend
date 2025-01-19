@@ -15,7 +15,7 @@
 		"db:push": "drizzle-kit push --config=drizzle-dev.config.ts",
 		"db:studio": "drizzle-kit studio --config=drizzle-dev.config.ts",
 		"db:generate:prod": "tsc -p tsconfig.json && drizzle-kit generate --config=drizzle-prod.config.ts",
-		"db:studio:prod": "NODE_ENV=production drizzle-kit studio --config=drizzle-prod.config.ts --port=3000",
+		"db:studio:prod": "NODE_ENV=production drizzle-kit studio --config=drizzle-prod.config.ts --port=3001",
 		"start:with-db": "concurrently \"pnpm run db:generate:prod\" \"pnpm run db:studio:prod\" \"pnpm start\"",
 		"test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
 	},

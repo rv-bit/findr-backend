@@ -26,4 +26,4 @@ EXPOSE 3000
 ENV NODE_ENV=production
 
 # Default command to run the app
-CMD ["pnpm", "start"]
+CMD ["pnpm", "start:with-db"]
