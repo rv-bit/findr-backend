@@ -4,10 +4,12 @@ import { Request } from 'express'
 import { betterAuth } from "better-auth";
 import { fromNodeHeaders } from 'better-auth/node';
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { twoFactor, username } from "better-auth/plugins"
+import { createAuthMiddleware, twoFactor, username } from "better-auth/plugins"
 
 import * as schema from "../services/database/schema.js"
 import db from "../services/database/database.js";
+
+import { sendEmail } from '../services/email.js';
 
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
 	return origin.startsWith('http') ? origin : `https://${origin}`
@@ -20,10 +22,22 @@ export const auth = betterAuth({
         schema: schema
     }),
 
+	baseURL: process.env.NODE_ENV === 'development' ? process.env.BASE_URL : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`),
 	trustedOrigins: trustedOrigins || ['http://localhost:3000'],
 
 	emailAndPassword: {
 		enabled: true,
+		sendResetPassword: async ({user, url, token}, request) => {
+			const urlObj = new URL(url);
+			const callbackURL = urlObj.searchParams.get('callbackURL');
+			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`)) + callbackURL! + '?token=' + token;
+
+			await sendEmail({
+				to: user.email,	
+				subject: "Reset your password",
+				text: `Click the link to reset your password: ${newUrl}`,
+			});
+		},
 	},
 
 	socialProviders: {
@@ -35,9 +49,22 @@ export const auth = betterAuth({
 	},
 
     session: {
-        expiresIn: 60 * 60 * 24 * 7, // 7 days
+        expiresIn: 60 * 60 * 24 * 2, // 2 days
         updateAge: 60 * 60 * 24 // 1 day (every 1 day the session expiration is updated)
     },
+
+	hooks: {
+		before: createAuthMiddleware(async (ctx) => {
+			if (ctx.path === '/reset-password/') { // example of a custom hook
+				return;
+			}
+		}),
+        after: createAuthMiddleware(async (ctx) => {
+			if (ctx.path === '/reset-password/') { // example of a custom hook
+				return;
+			}
+		}),
+	},
 
     plugins: [
         twoFactor(),
