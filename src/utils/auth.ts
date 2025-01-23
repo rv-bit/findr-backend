@@ -50,7 +50,12 @@ export const auth = betterAuth({
 
     session: {
         expiresIn: 60 * 60 * 24 * 2, // 2 days
-        updateAge: 60 * 60 * 24 // 1 day (every 1 day the session expiration is updated)
+        updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
+
+		cookieCache: { // Cache the session cookie for 5 minutes
+            enabled: true,
+            maxAge: 5 * 60 // Cache duration in seconds
+        }
     },
 
 	hooks: {
