@@ -6,9 +6,9 @@ import cors from 'cors';
 import path from 'path';
 
 import { toNodeHandler } from "better-auth/node";
-import { auth, limiter } from "./utils/index.js";
+import { auth, limiter } from "#utils/index.js";
 
-import routes from './routes/index.js';
+import routes from '#routes/index.js';
 import * as middlewares from './middlewares.js';
 
 const app = express()

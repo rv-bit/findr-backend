@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import logger from "../utils/logger.js";
+import logger from "#utils/logger.js";
 
 if (!process.env.EMAIL_SMPT_HOST) throw new Error('EMAIL_SMPT_HOST is not defined');
 if (!process.env.EMAIL_SMPT_PORT) throw new Error('EMAIL_SMPT_PORT is not defined');

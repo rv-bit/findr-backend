@@ -6,10 +6,10 @@ import { fromNodeHeaders } from 'better-auth/node';
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware, twoFactor, username } from "better-auth/plugins"
 
-import * as schema from "../services/database/schema.js"
-import db from "../services/database/database.js";
+import * as schema from "#services/database/schema.js"
+import db from "#services/database/database.js";
 
-import { sendEmail } from '../services/email.js';
+import { sendEmail } from '#services/email.js';
 
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
 	return origin.startsWith('http') ? origin : `https://${origin}`

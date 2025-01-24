@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { handler, userMiddleware } from '../utils/index.js'
+import { handler, userMiddleware } from '#utils/index.js'
 
 export const test = handler(async (req: Request, res: Response) => {
     res.status(200).json({

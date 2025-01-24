@@ -1,8 +1,8 @@
 import { Router, RequestHandler } from 'express';
-import { validateRequest } from '../../utils/utils.js';
+import { validateRequest } from '#utils/index.js';
 import { testSchema } from './schema.js';
 
-import * as controller from '../../controllers/test.js'
+import * as controller from '#controllers/test.js'
 
 const router = Router();
 
