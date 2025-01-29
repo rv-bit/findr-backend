@@ -2,9 +2,11 @@ import 'dotenv/config'
 import { Request } from 'express'
 
 import { betterAuth } from 'better-auth'
+import { APIError } from 'better-auth/api'
 import { fromNodeHeaders } from 'better-auth/node'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
+import { eq } from 'drizzle-orm'
 
 import config from '../config.js'
 
@@ -16,6 +18,29 @@ import { sendEmail } from '#services/email.js'
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
 	return origin.startsWith('http') ? origin : `https://${origin}`
 })
+
+// This function is used to create a unique username if the username already exists
+const createUniqueUsername = (username: string) => {
+	let uniqueUsername = username
+
+	;(async () => {
+		const user = await db.select().from(schema.user).where(eq(schema.user.username, username))
+		let uniqueUser = user[0] // since username is unique, there should be only one user with this username
+
+		if (uniqueUser) {
+			let i = 0
+			while (uniqueUser) {
+				i += 1
+				uniqueUsername = username + i
+
+				const user = await db.select().from(schema.user).where(eq(schema.user.username, uniqueUsername))
+				uniqueUser = user[0]
+			}
+		}
+	})()
+
+	return uniqueUsername
+}
 
 export const auth = betterAuth({
 	name: config.APP_NAME,
@@ -32,11 +57,29 @@ export const auth = betterAuth({
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
 			redirectURI: process.env.NODE_ENV === 'development' ? process.env.BASE_URL + '/api/auth/callback/github/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/api/auth/callback/github/',
+			scope: ['user:email', 'read:user'],
+			mapProfileToUser(profile) {
+				return {
+					name: profile.name,
+					email: profile.email,
+					image: profile.avatar_url,
+					username: createUniqueUsername(profile.login),
+				}
+			},
 		},
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
 			redirectURI: process.env.NODE_ENV === 'development' ? process.env.BASE_URL + '/api/auth/callback/google/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/api/auth/callback/google/',
+			scope: ['email', 'profile'],
+			mapProfileToUser(profile) {
+				return {
+					name: profile.given_name,
+					email: profile.email,
+					image: profile.picture,
+					username: createUniqueUsername(profile.given_name + profile.family_name),
+				}
+			},
 		},
 	},
 
@@ -93,12 +136,26 @@ export const auth = betterAuth({
 				})
 			},
 		},
+		deleteUser: {
+			enabled: true,
+			sendDeleteAccountVerification: async ({ user, url, token }, request) => {
+				const urlObj = new URL(url)
+				const callbackURL = urlObj.searchParams.get('callbackURL')
+				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + callbackURL! + '?token=' + token
+
+				await sendEmail({
+					to: user.email,
+					subject: 'Delete your account',
+					text: `Click the link to delete your account: ${newUrl}`,
+				})
+			},
+		},
 	},
 
 	session: {
 		expiresIn: 60 * 60 * 24 * 2, // 2 days
 		updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
-		freshAge: 0, // 7 days (if the session is not used for 7 days, it's considered stale)
+		freshAge: 60 * 60 * 24, // 1 day (if the session is older than 1 day, it's considered not fresh)
 
 		cookieCache: {
 			// Cache the session cookie for 5 minutes
@@ -118,6 +175,7 @@ export const auth = betterAuth({
 		window: 60, // time window in seconds
 		max: 100, // max requests in the window
 		customRules: {
+			// example of custom rate limit rules
 			'/sign-in/email': {
 				window: 10,
 				max: 3,
@@ -148,10 +206,20 @@ export const auth = betterAuth({
 	},
 
 	plugins: [
+		username(),
+
 		twoFactor({
 			issuer: config.APP_NAME,
+			otpOptions: {
+				async sendOTP({ user, otp }, request) {
+					await sendEmail({
+						to: user.email,
+						subject: 'Two factor authentication OTP',
+						text: `Your OTP is: ${otp}`,
+					})
+				},
+			},
 		}),
-		username(),
 
 		emailOTP({
 			async sendVerificationOTP({ email, otp, type }) {
