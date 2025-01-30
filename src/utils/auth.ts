@@ -192,17 +192,21 @@ export const auth = betterAuth({
 
 	hooks: {
 		before: createAuthMiddleware(async (ctx) => {
-			if (ctx.path === '/reset-password/') {
-				// example of a custom hook
-				return
+			switch (ctx.path) {
+				case '/update-user':
+					const isUsernameTaken = await db.select().from(schema.user).where(eq(schema.user.username, ctx.body.username))
+					if (isUsernameTaken) {
+						throw new APIError('BAD_REQUEST', {
+							message: 'Username is already taken',
+							status: 304,
+						})
+					}
+					break
+				default:
+					break
 			}
 		}),
-		after: createAuthMiddleware(async (ctx) => {
-			if (ctx.path === '/reset-password/') {
-				// example of a custom hook
-				return
-			}
-		}),
+		after: createAuthMiddleware(async (ctx) => {}),
 	},
 
 	plugins: [
