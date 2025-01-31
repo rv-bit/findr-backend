@@ -115,7 +115,7 @@ export const auth = betterAuth({
 	account: {
 		accountLinking: {
 			enabled: true,
-			allowDifferentEmails: true,
+			// allowDifferentEmails: true,
 			trustedProviders: ['google', 'github'],
 		},
 	},
@@ -194,7 +194,7 @@ export const auth = betterAuth({
 			switch (ctx.path) {
 				case '/update-user':
 					const isUsernameTaken = await db.select().from(schema.user).where(eq(schema.user.username, ctx.body.username))
-					if (isUsernameTaken) {
+					if (isUsernameTaken.length > 0) {
 						throw new APIError('BAD_REQUEST', {
 							message: 'Username is already taken',
 							status: 304,
@@ -205,7 +205,16 @@ export const auth = betterAuth({
 					break
 			}
 		}),
-		after: createAuthMiddleware(async (ctx) => {}),
+		after: createAuthMiddleware(async (ctx) => {
+			switch (ctx.query?.error) {
+				case 'account_already_linked_to_different_user':
+					throw ctx.redirect('/error/?error=account_already_linked_to_different_user')
+				case "email_doesn't_match":
+					throw ctx.redirect('/error/?error=email_doesnt_match')
+				default:
+					break
+			}
+		}),
 	},
 
 	plugins: [
