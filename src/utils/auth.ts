@@ -1,9 +1,7 @@
 import 'dotenv/config'
-import { Request } from 'express'
 
 import { betterAuth } from 'better-auth'
 import { APIError } from 'better-auth/api'
-import { fromNodeHeaders } from 'better-auth/node'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
