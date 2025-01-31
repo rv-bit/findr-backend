@@ -80,6 +80,9 @@ export const posts = mysqlTable(
 		title: varchar({ length: 256 }),
 		content: longtext(),
 		userId: varchar('userId', { length: 256 }).references(() => user.id),
+
+		createdAt: timestamp('created_at').notNull(),
+		updatedAt: timestamp('updated_at').notNull(),
 	},
 	(table) => {
 		return {
