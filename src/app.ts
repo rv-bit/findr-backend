@@ -35,10 +35,10 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'docker') 
 	app.use(express.static(path.join(__dirname, '../dist')))
 }
 
-app.all('/v1/auth/*', toNodeHandler(auth))
+app.all('/api/auth/*', toNodeHandler(auth))
 
 app.use(express.json())
-app.use('/v1/', routes)
+app.use('/api/v1', routes)
 
 app.use(middlewares.notFoundHandler)
 app.use(middlewares.errorHandler)
