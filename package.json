@@ -6,44 +6,50 @@
 	"license": "MIT",
 	"private": true,
 	"type": "module",
+	"imports": {
+		"#routes/*": "./dist/routes/*",
+		"#controllers/*": "./dist/controllers/*",
+		"#utils/*": "./dist/utils/*",
+		"#services/*": "./dist/services/*"
+	},
 	"scripts": {
 		"build": "tsc",
-		"dev": "nodemon src/index.ts",
+		"dev": "nodemon",
 		"start": "node dist/index.js",
 		"db:generate": "tsc -p tsconfig.json && drizzle-kit generate --config=drizzle-dev.config.ts",
 		"db:migrate": "drizzle-kit migrate --config=drizzle-dev.config.ts",
 		"db:push": "drizzle-kit push --config=drizzle-dev.config.ts",
 		"db:studio": "drizzle-kit studio --config=drizzle-dev.config.ts",
 		"db:generate:prod": "tsc -p tsconfig.json && drizzle-kit generate --config=drizzle-prod.config.ts",
-		"db:studio:prod": "NODE_ENV=production drizzle-kit studio --config=drizzle-prod.config.ts --port=3001",
-		"start:with-db": "concurrently \"pnpm run db:generate:prod\" \"pnpm run db:studio:prod\" \"pnpm start\"",
+		"start:with-db": "concurrently \"pnpm run db:generate:prod\" \"pnpm start\"",
 		"test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
 	},
 	"dependencies": {
 		"@auth/drizzle-adapter": "^1.7.4",
 		"@auth/express": "^0.8.4",
 		"axios": "^1.7.9",
-		"better-auth": "^1.1.14",
+		"better-auth": "^1.1.15",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.7",
-		"drizzle-orm": "^0.38.4",
+		"drizzle-orm": "^0.39.1",
 		"express": "^4.21.2",
 		"express-rate-limit": "^7.5.0",
 		"helmet": "^8.0.0",
 		"joi": "^17.13.3",
 		"mysql2": "^3.12.0",
-		"nodemailer": "^6.9.16",
+		"nodemailer": "^6.10.0",
 		"winston": "^3.17.0",
 		"xss": "^1.0.15"
 	},
 	"devDependencies": {
-		"@types/nodemailer": "^6.4.17",
 		"@types/cors": "^2.8.17",
 		"@types/express": "^5.0.0",
+		"@types/nodemailer": "^6.4.17",
 		"concurrently": "^9.1.2",
-		"drizzle-kit": "^0.30.2",
+		"drizzle-kit": "^0.30.4",
 		"nodemon": "^3.1.9",
 		"ts-node": "^10.9.2",
+		"tsconfig-paths": "^4.2.0",
 		"typescript": "^5.7.3"
 	}
 }

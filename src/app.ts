@@ -1,15 +1,15 @@
 import 'dotenv/config'
 import express from 'express'
 
-import helmet from "helmet";
-import cors from 'cors';
-import path from 'path';
+import helmet from 'helmet'
+import cors from 'cors'
+import path from 'path'
 
-import { toNodeHandler } from "better-auth/node";
-import { auth, limiter } from "./utils/index.js";
+import { toNodeHandler } from 'better-auth/node'
+import { auth, limiter } from '#utils/index.js'
 
-import routes from './routes/index.js';
-import * as middlewares from './middlewares.js';
+import routes from '#routes/index.js'
+import * as middlewares from './middlewares.js'
 
 const app = express()
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
@@ -27,6 +27,7 @@ const corsOptions = {
 
 app.set('trust proxy', 1) // Trust first proxy
 app.use(cors(corsOptions))
+app.use(helmet())
 app.use(limiter) // Apply rate limiting for all routes
 
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'docker') {
@@ -39,7 +40,7 @@ app.all('/api/auth/*', toNodeHandler(auth))
 app.use(express.json())
 app.use('/api/v1', routes)
 
-app.use(middlewares.notFoundHandler);
-app.use(middlewares.errorHandler);
+app.use(middlewares.notFoundHandler)
+app.use(middlewares.errorHandler)
 
 export default app

@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "1ac6b391-1595-46c1-9d5d-92546ec6e7e7",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "35dbb61d-c4b3-49a3-82da-dc1e27402edf",
+  "prevId": "af199d2f-209b-45eb-aaaa-455bd20d946d",
   "tables": {
     "account": {
       "name": "account",
@@ -529,6 +529,13 @@
         "title": {
           "name": "title",
           "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "longtext",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

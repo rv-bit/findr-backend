@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "1ac6b391-1595-46c1-9d5d-92546ec6e7e7",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "b24bea2a-425b-4a40-a4cb-14ca30bee4b1",
+  "prevId": "35dbb61d-c4b3-49a3-82da-dc1e27402edf",
   "tables": {
     "account": {
       "name": "account",
@@ -533,11 +533,32 @@
           "notNull": false,
           "autoincrement": false
         },
+        "content": {
+          "name": "content",
+          "type": "longtext",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "userId": {
           "name": "userId",
           "type": "varchar(256)",
           "primaryKey": false,
           "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         }
       },

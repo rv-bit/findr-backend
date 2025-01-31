@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, text, int, timestamp, boolean, uniqueIndex, index } from 'drizzle-orm/mysql-core'
+import { mysqlTable, varchar, text, int, timestamp, boolean, uniqueIndex, index, longtext } from 'drizzle-orm/mysql-core'
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm'
 
 const generateUniqueString = (length: number = 12): string => {
@@ -72,6 +72,26 @@ export const twoFactor = mysqlTable('two_factor', {
 		.references(() => user.id),
 })
 
+export const posts = mysqlTable(
+	'posts',
+	{
+		id: int().primaryKey().autoincrement(),
+		slug: varchar({ length: 256 }).$default(() => generateUniqueString(16)),
+		title: varchar({ length: 256 }),
+		content: longtext(),
+		userId: varchar('userId', { length: 256 }).references(() => user.id),
+
+		createdAt: timestamp('created_at').notNull(),
+		updatedAt: timestamp('updated_at').notNull(),
+	},
+	(table) => {
+		return {
+			slugIndex: uniqueIndex('slug_idx').on(table.slug),
+			titleIndex: index('title_idx').on(table.title),
+		}
+	}
+)
+
 export const comments = mysqlTable('comments', {
 	id: int().primaryKey().autoincrement(),
 	postId: int('post_id').references(() => posts.id),
@@ -132,22 +152,6 @@ export const notifications = mysqlTable('notifications', {
 	createdAt: timestamp('createdAt').notNull(),
 	isRead: boolean('isRead').default(false),
 })
-
-export const posts = mysqlTable(
-	'posts',
-	{
-		id: int().primaryKey().autoincrement(),
-		slug: varchar({ length: 256 }).$default(() => generateUniqueString(16)),
-		title: varchar({ length: 256 }),
-		userId: varchar('userId', { length: 256 }).references(() => user.id),
-	},
-	(table) => {
-		return {
-			slugIndex: uniqueIndex('slug_idx').on(table.slug),
-			titleIndex: index('title_idx').on(table.title),
-		}
-	}
-)
 
 export const shares = mysqlTable('shares', {
 	id: int('id').primaryKey().autoincrement(),

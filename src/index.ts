@@ -1,5 +1,4 @@
 import { Server } from 'http';
-
 import app from './app.js';
 
 const server = new Server(app);
