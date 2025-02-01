@@ -54,7 +54,7 @@ export const auth = betterAuth({
 		github: {
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/auth/callback/github/' : (process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + '/auth/callback/github/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/callback/github/' : (process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + '/callback/github/',
 			scope: ['user:email', 'read:user'],
 			mapProfileToUser(profile) {
 				return {
@@ -68,7 +68,7 @@ export const auth = betterAuth({
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/auth/callback/google/' : (process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + '/auth/callback/google/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/callback/google/' : (process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + '/callback/google/',
 			scope: ['email', 'profile'],
 			mapProfileToUser(profile) {
 				return {
