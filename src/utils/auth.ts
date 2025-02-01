@@ -86,7 +86,7 @@ export const auth = betterAuth({
 		sendResetPassword: async ({ user, url, token }, request) => {
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + callbackURL! + '?token=' + token
+			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.FRONT_END_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + callbackURL! + '?token=' + token
 
 			await sendEmail({
 				to: user.email,
@@ -102,7 +102,7 @@ export const auth = betterAuth({
 		sendVerificationEmail: async ({ user, url, token }, request) => {
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + callbackURL! + '?token=' + token
+			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.FRONT_END_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + callbackURL! + '?token=' + token
 
 			await sendEmail({
 				to: user.email,
@@ -126,7 +126,7 @@ export const auth = betterAuth({
 			sendChangeEmailVerification: async ({ user, newEmail, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + callbackURL! + '?token=' + token
+				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.FRONT_END_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + callbackURL! + '?token=' + token
 
 				await sendEmail({
 					to: user.email, // verification email must be sent to the current user email to approve the change
@@ -140,7 +140,7 @@ export const auth = betterAuth({
 			sendDeleteAccountVerification: async ({ user, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + callbackURL! + '?token=' + token
+				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.FRONT_END_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + callbackURL! + '?token=' + token
 
 				await sendEmail({
 					to: user.email,
