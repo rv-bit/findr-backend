@@ -163,13 +163,6 @@ export const auth = betterAuth({
 		},
 	},
 
-	advanced: {
-		crossSubDomainCookies: {
-			enabled: false, // Optional for now is false but in prod it should be with api.findr.blog
-			domain: 'example.com', // Optional. Defaults to the base url domain if not provided
-		},
-	},
-
 	rateLimit: {
 		window: 60, // time window in seconds
 		max: 100, // max requests in the window
@@ -206,11 +199,13 @@ export const auth = betterAuth({
 			}
 		}),
 		after: createAuthMiddleware(async (ctx) => {
+			const url = process.env.NODE_ENV === 'development' ? process.env.FRONT_END_URL : process.env.FRONT_END_URL?.startsWith('http') ? process.env.FRONT_END_URL : `https://${process.env.FRONT_END_URL}`
+
 			switch (ctx.query?.error) {
 				case 'account_already_linked_to_different_user':
-					throw ctx.redirect('/error/?error=account_already_linked_to_different_user')
+					throw ctx.redirect(`${url}/error/?error=account_already_linked_to_different_user`)
 				case "email_doesn't_match":
-					throw ctx.redirect('/error/?error=email_doesnt_match')
+					throw ctx.redirect(`${url}/error/?error=email_doesnt_match`)
 				default:
 					break
 			}
