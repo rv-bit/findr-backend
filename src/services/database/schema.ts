@@ -19,8 +19,13 @@ export const user = mysqlTable('user', {
 	image: text('image'),
 	createdAt: timestamp('created_at').notNull(),
 	updatedAt: timestamp('updated_at').notNull(),
-	twoFactorEnabled: boolean('two_factor_enabled'),
+	role: text('role'),
+	banned: boolean('banned'),
+	banReason: text('ban_reason'),
+	banExpires: timestamp('ban_expires'),
 	username: varchar('username', { length: 255 }).unique(),
+	twoFactorEnabled: boolean('two_factor_enabled'),
+	about_description: text('about_description'),
 })
 
 export const session = mysqlTable('session', {
@@ -34,6 +39,7 @@ export const session = mysqlTable('session', {
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
 		.references(() => user.id),
+	impersonatedBy: text('impersonated_by'),
 })
 
 export const account = mysqlTable('account', {

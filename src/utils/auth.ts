@@ -3,7 +3,7 @@ import 'dotenv/config'
 import { betterAuth } from 'better-auth'
 import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
+import { admin, createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 
 import config from '../config.js'
@@ -121,6 +121,12 @@ export const auth = betterAuth({
 	},
 
 	user: {
+		additionalFields: {
+			about_description: {
+				type: 'string',
+				default: '',
+			},
+		},
 		changeEmail: {
 			enabled: true,
 			sendChangeEmailVerification: async ({ user, newEmail, url, token }, request) => {
@@ -213,6 +219,7 @@ export const auth = betterAuth({
 	},
 
 	plugins: [
+		admin(),
 		username(),
 
 		twoFactor({
