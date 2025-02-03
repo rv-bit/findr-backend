@@ -49,7 +49,7 @@ export const auth = betterAuth({
 		schema: schema,
 	}),
 
-	baseURL: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.FRONT_END_URL?.startsWith('http') ? process.env.FRONT_END_URL : `https://${process.env.FRONT_END_URL}`,
+	baseURL: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`,
 	trustedOrigins: trustedOrigins || ['http://localhost:3000'],
 
 	socialProviders: {
