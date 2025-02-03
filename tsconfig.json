@@ -1,27 +1,38 @@
 {
 	"compilerOptions": {
+		"outDir": "./dist",
 		"baseUrl": "./",
 		"paths": {
-			"#routes/*": ["./src/routes/*"],
-			"#controllers/*": ["./src/controllers/*"],
-			"#utils/*": ["./src/utils/*"],
-			"#services/*": ["./src/services/*"]
+			"~/*": ["./src/*"],
+			"~routes/*": ["./src/routes/*"],
+			"~controllers/*": ["./src/controllers/*"],
+			"~utils/*": ["./src/utils/*"],
+			"~services/*": ["./src/services/*"]
 		},
-		"outDir": "./dist",
 
-		"target": "ES2020",
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
-		"sourceMap": true,
-		"allowSyntheticDefaultImports": true,
-
-		"checkJs": true,
+		"lib": ["ESNext"],
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleDetection": "force",
 		"allowJs": true,
 
-		"forceConsistentCasingInFileNames": true,
+		// Bundler mode
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
+		"noEmit": true,
 
+		// Best practices
+		"strict": true,
 		"skipLibCheck": true,
-		"strict": true
+		"noFallthroughCasesInSwitch": true,
+
+		// Some stricter flags that are not enabled by default
+		"noUnusedLocals": true
+		// "noUnusedParameters": true
+
+		// used for like process.env["NODE_ENV"] and not process.env.NODE_ENV
+		// "noPropertyAccessFromIndexSignature": true
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", "dist", "coverage"]
