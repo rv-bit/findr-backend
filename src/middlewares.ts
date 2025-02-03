@@ -1,6 +1,6 @@
-import { auth } from '#utils/auth.js'
+import { auth } from '~/utils/auth'
 import { fromNodeHeaders } from 'better-auth/node'
-import { Request, Response, NextFunction } from 'express'
+import type { Request, Response, NextFunction } from 'express'
 
 export function notFoundHandler(req: Request, res: Response, next: NextFunction) {
 	const message = `Not Found - ${req.originalUrl}`

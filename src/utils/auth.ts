@@ -6,16 +6,18 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 
-import config from '../config.js'
+import config from '~/config'
 
-import * as schema from '#services/database/schema.js'
-import db from '#services/database/database.js'
+import * as schema from '~services/database/schema'
+import db from '~services/database/database'
 
-import { sendEmail } from '#services/email.js'
+import { sendEmail } from '~services/email'
 
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
 	return origin.startsWith('http') ? origin : `https://${origin}`
 })
+
+console.log('Auth url:', process.env.AUTH_URL)
 
 // This function is used to create a unique username if the username already exists
 const createUniqueUsername = (username: string) => {
@@ -54,7 +56,7 @@ export const auth = betterAuth({
 		github: {
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/auth/callback/github/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/auth/callback/github/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/callback/github/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/callback/github/',
 			scope: ['user:email', 'read:user'],
 			mapProfileToUser(profile) {
 				return {
@@ -68,7 +70,7 @@ export const auth = betterAuth({
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/auth/callback/google/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/auth/callback/google/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/callback/google/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/callback/google/',
 			scope: ['email', 'profile'],
 			mapProfileToUser(profile) {
 				return {

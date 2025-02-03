@@ -1,9 +1,9 @@
-import { Router, RequestHandler } from 'express'
-import { validateRequest } from '#utils/index.js'
-import { newPostSchema } from './schema.js'
+import { Router, type RequestHandler } from 'express'
+import { validateRequest } from '~/utils/index'
+import { newPostSchema } from './schema'
 
-import * as controller from '#controllers/post/index.js'
-import { userHandler } from '../../middlewares.js'
+import * as controller from '~/controllers/post/index'
+import { userHandler } from '~/middlewares'
 
 const router = Router()
 

@@ -1,9 +1,9 @@
-import { Server } from 'http';
-import app from './app.js';
+import { Server } from 'http'
+import app from './app'
 
-const server = new Server(app);
-const PORT = process.env.PORT;
+const server = new Server(app)
+const PORT = process.env.PORT
 
 server.listen(PORT, () => {
-    console.log(`Server listening on ${PORT}`);
-});
+	console.log(`Server listening on ${PORT}`)
+})

@@ -1,10 +1,10 @@
-import { Request, Response } from 'express'
-import * as schema from '#services/database/schema.js'
-import db from '#services/database/database.js'
+import type { Request, Response } from 'express'
+import * as schema from '~/services/database/schema'
+import db from '~services/database/database'
 
-import { handler } from '#utils/index.js'
-import { NewPostSchema } from '#routes/post/schema.js'
-import logger from '#utils/logger.js'
+import { handler } from '~/utils/index'
+import type { NewPostSchema } from '~/routes/post/schema'
+import logger from '~/utils/logger'
 
 export const getAllPosts = handler(async (req: Request, res: Response) => {
 	res.status(200).json({
