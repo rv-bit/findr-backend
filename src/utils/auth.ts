@@ -49,14 +49,14 @@ export const auth = betterAuth({
 		schema: schema,
 	}),
 
-	baseURL: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`,
+	baseURL: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.FRONT_END_URL?.startsWith('http') ? process.env.FRONT_END_URL : `https://${process.env.FRONT_END_URL}`,
 	trustedOrigins: trustedOrigins || ['http://localhost:3000'],
 
 	socialProviders: {
 		github: {
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/callback/github/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/callback/github/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/callback/github/' : (process.env.FRONT_END_URL?.startsWith('http') ? process.env.FRONT_END_URL : `https://${process.env.FRONT_END_URL}`) + '/callback/github/',
 			scope: ['user:email', 'read:user'],
 			mapProfileToUser(profile) {
 				return {
@@ -70,7 +70,7 @@ export const auth = betterAuth({
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/callback/google/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/callback/google/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/callback/google/' : (process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + '/callback/google/',
 			scope: ['email', 'profile'],
 			mapProfileToUser(profile) {
 				return {
@@ -88,7 +88,7 @@ export const auth = betterAuth({
 		sendResetPassword: async ({ user, url, token }, request) => {
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + callbackURL! + '?token=' + token
+			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.AUTH_URL?.startsWith('http') ? process.env.AUTH_URL : `https://${process.env.AUTH_URL}`) + callbackURL! + '?token=' + token
 
 			await sendEmail({
 				to: user.email,
@@ -104,7 +104,7 @@ export const auth = betterAuth({
 		sendVerificationEmail: async ({ user, url, token }, request) => {
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + callbackURL! + '?token=' + token
+			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.FRONT_END_URL?.startsWith('http') ? process.env.FRONT_END_URL : `https://${process.env.FRONT_END_URL}`) + callbackURL! + '?token=' + token
 
 			await sendEmail({
 				to: user.email,
@@ -128,7 +128,7 @@ export const auth = betterAuth({
 			sendChangeEmailVerification: async ({ user, newEmail, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + callbackURL! + '?token=' + token
+				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.FRONT_END_URL?.startsWith('http') ? process.env.FRONT_END_URL : `https://${process.env.FRONT_END_URL}`) + callbackURL! + '?token=' + token
 
 				await sendEmail({
 					to: user.email, // verification email must be sent to the current user email to approve the change
@@ -142,7 +142,7 @@ export const auth = betterAuth({
 			sendDeleteAccountVerification: async ({ user, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + callbackURL! + '?token=' + token
+				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.FRONT_END_URL?.startsWith('http') ? process.env.FRONT_END_URL : `https://${process.env.FRONT_END_URL}`) + callbackURL! + '?token=' + token
 
 				await sendEmail({
 					to: user.email,
