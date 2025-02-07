@@ -62,7 +62,10 @@ CREATE TABLE `posts` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`slug` varchar(256),
 	`title` varchar(256),
+	`content` longtext,
 	`userId` varchar(256),
+	`created_at` timestamp NOT NULL,
+	`updated_at` timestamp NOT NULL,
 	CONSTRAINT `posts_id` PRIMARY KEY(`id`),
 	CONSTRAINT `slug_idx` UNIQUE(`slug`)
 );
