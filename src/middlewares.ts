@@ -21,11 +21,9 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
 	res.json(responseBody)
 }
 
-export const userHandler = () => {
+export const authHandler = () => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })
-
-		console.log('session', session)
 
 		if (!session) {
 			return res.status(400).json({
