@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import * as schema from '~/services/database/schema'
-import db from '~services/database/database'
+import db from '~/services/database/database'
 
 import { handler } from '~/utils/index'
 import type { NewPostSchema } from '~/routes/post/schema'

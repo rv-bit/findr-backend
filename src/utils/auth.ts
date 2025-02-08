@@ -3,15 +3,15 @@ import 'dotenv/config'
 import { betterAuth } from 'better-auth'
 import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { admin, createAuthMiddleware, emailOTP, multiSession, twoFactor, username } from 'better-auth/plugins'
+import { admin, createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 
 import config from '~/config'
 
-import * as schema from '~services/database/schema'
-import db from '~services/database/database'
+import * as schema from '~/services/database/schema'
+import db from '~/services/database/database'
 
-import { sendEmail } from '~services/email'
+import { sendEmail } from '~/services/email'
 import { deleteUserAvatar, uploadUserAvatar } from '~/services/s3/avatar-client'
 
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
