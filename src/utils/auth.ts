@@ -1,6 +1,6 @@
 import 'dotenv/config'
 
-import { betterAuth } from 'better-auth'
+import { betterAuth, type User } from 'better-auth'
 import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin, createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
@@ -83,37 +83,6 @@ export const auth = betterAuth({
 		},
 	},
 
-	emailAndPassword: {
-		enabled: true,
-		sendResetPassword: async ({ user, url, token }, request) => {
-			const urlObj = new URL(url)
-			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
-
-			await sendEmail({
-				to: user.email,
-				subject: 'Reset your password',
-				text: `Click the link to reset your password: ${newUrl}`,
-			})
-		},
-	},
-
-	emailVerification: {
-		sendOnSignUp: true,
-		autoSignInAfterVerification: false,
-		sendVerificationEmail: async ({ user, url, token }, request) => {
-			const urlObj = new URL(url)
-			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
-
-			await sendEmail({
-				to: user.email,
-				subject: 'Verify your email address',
-				text: `Click the link to verify your email: ${newUrl}`,
-			})
-		},
-	},
-
 	account: {
 		accountLinking: {
 			enabled: true,
@@ -123,6 +92,13 @@ export const auth = betterAuth({
 	},
 
 	user: {
+		additionalFields: {
+			about_description: {
+				type: 'string',
+				required: false,
+				defaultValue: '',
+			},
+		},
 		changeEmail: {
 			enabled: true,
 			sendChangeEmailVerification: async ({ user, newEmail, url, token }, request) => {
@@ -157,6 +133,37 @@ export const auth = betterAuth({
 		},
 	},
 
+	emailAndPassword: {
+		enabled: true,
+		sendResetPassword: async ({ user, url, token }, request) => {
+			const urlObj = new URL(url)
+			const callbackURL = urlObj.searchParams.get('callbackURL')
+			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+
+			await sendEmail({
+				to: user.email,
+				subject: 'Reset your password',
+				text: `Click the link to reset your password: ${newUrl}`,
+			})
+		},
+	},
+
+	emailVerification: {
+		sendOnSignUp: true,
+		autoSignInAfterVerification: false,
+		sendVerificationEmail: async ({ user, url, token }, request) => {
+			const urlObj = new URL(url)
+			const callbackURL = urlObj.searchParams.get('callbackURL')
+			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+
+			await sendEmail({
+				to: user.email,
+				subject: 'Verify your email address',
+				text: `Click the link to verify your email: ${newUrl}`,
+			})
+		},
+	},
+
 	session: {
 		expiresIn: 60 * 60 * 24 * 2, // 2 days
 		updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
@@ -188,25 +195,24 @@ export const auth = betterAuth({
 		},
 	},
 
-	// databaseHooks: {
-	// 	user: {
-	// 		update: {
-	// 			before: async (user) => {
-	// 				// check if current image is different from the new image
-	// 				// if different, delete the old image
-	// 				console.log('user:', user)
-	// 				if (user.id) {
-	// 					const oldUserData = await db.select().from(schema.user).where(eq(schema.user.id, user.id))
-	// 					if (oldUserData[0].image !== user.image) {
-	// 						console.log('oldUserData[0].image:', oldUserData[0].image)
-	// 						await deleteUserAvatar(oldUserData[0].image)
-	// 					}
-	// 				}
-	// 				return true // or return void or the expected object type
-	// 			},
-	// 		},
-	// 	},
-	// },
+	databaseHooks: {
+		user: {
+			create: {
+				before: async (user: User & { username?: string; about_description?: string; slug?: string }) => {},
+			},
+			update: {
+				after: async (user: User & { username?: string; about_description?: string; slug?: string }) => {
+					if (user?.id) {
+						const oldUserData = await db.select().from(schema.user).where(eq(schema.user.id, user.id))
+						if (oldUserData[0].image !== user.image) {
+							console.log('oldUserData[0].image:', oldUserData[0].image)
+							await deleteUserAvatar(oldUserData[0].image)
+						}
+					}
+				},
+			},
+		},
+	},
 
 	hooks: {
 		before: createAuthMiddleware(async (ctx) => {
@@ -247,6 +253,21 @@ export const auth = betterAuth({
 								message: 'Username is already taken',
 								status: 304,
 							})
+						}
+
+						const createdSlug = ctx.body.username
+							.toLowerCase()
+							.replace(/ /g, '-')
+							.replace(/[^a-zA-Z0-9-]/g, '')
+
+						return {
+							context: {
+								...ctx,
+								body: {
+									...ctx.body,
+									slug: createdSlug,
+								},
+							},
 						}
 					}
 					break
