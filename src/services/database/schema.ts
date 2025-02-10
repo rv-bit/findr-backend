@@ -10,6 +10,7 @@ const generateUniqueString = (length: number = 12): string => {
 	}
 	return uniqueString
 }
+
 export const user = mysqlTable('user', {
 	id: varchar('id', { length: 36 }).primaryKey(),
 	name: text('name').notNull(),
@@ -24,6 +25,7 @@ export const user = mysqlTable('user', {
 	banReason: text('ban_reason'),
 	banExpires: timestamp('ban_expires'),
 	twoFactorEnabled: boolean('two_factor_enabled'),
+	about_description: text('about_description'),
 })
 
 export const session = mysqlTable('session', {
