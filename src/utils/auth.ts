@@ -170,14 +170,14 @@ export const auth = betterAuth({
 		freshAge: 0, // 60 * 60 * 24 = 1 day (if the session is older than 1 day, it's considered not fresh)
 
 		cookieCache: {
-			// Cache the session cookie for 5 minutes
+			// Cache the session cookie for 1 minute
 			enabled: true,
-			maxAge: 5 * 60, // Cache duration in seconds
+			maxAge: 1 * 60, // Cache duration in seconds
 		},
 	},
 
 	rateLimit: {
-		window: 60, // time window in seconds
+		window: 40, // time window in seconds
 		max: 100, // max requests in the window
 		customRules: {
 			// example of custom rate limit rules
@@ -186,7 +186,6 @@ export const auth = betterAuth({
 				max: 3,
 			},
 			'/two-factor/*': async (request) => {
-				// custom function to return rate limit window and max
 				return {
 					window: 10,
 					max: 3,
@@ -198,10 +197,21 @@ export const auth = betterAuth({
 	databaseHooks: {
 		user: {
 			create: {
-				before: async (user: User & { username?: string; about_description?: string; slug?: string }) => {},
+				before: async (user: User & { username?: string; about_description?: string }) => {
+					if (user.username) {
+						const isUsernameTaken = await db.select().from(schema.user).where(eq(schema.user.username, user.username))
+						if (isUsernameTaken.length > 0) {
+							return false
+						}
+					}
+
+					return {
+						data: user,
+					}
+				},
 			},
 			update: {
-				after: async (user: User & { username?: string; about_description?: string; slug?: string }) => {
+				after: async (user: User & { username?: string; about_description?: string }) => {
 					if (user?.id) {
 						const oldUserData = await db.select().from(schema.user).where(eq(schema.user.id, user.id))
 						if (oldUserData[0].image !== user.image) {
@@ -219,14 +229,6 @@ export const auth = betterAuth({
 			switch (ctx.path) {
 				case '/update-user':
 					if (ctx.body.image) {
-						// fix this somehow to get the users id from the session
-
-						// const oldUserData = await db.select().from(schema.user).where(eq(schema.user.id, user.id))
-						// if (oldUserData[0].image !== ctx.body.image) {
-						// 	console.log('oldUserData[0].image:', oldUserData[0].image)
-						// 	await deleteUserAvatar(oldUserData[0].image)
-						// }
-
 						const avatarUrl = await uploadUserAvatar(ctx.body.image)
 						if (!avatarUrl) {
 							throw new APIError('BAD_REQUEST', {
@@ -253,21 +255,6 @@ export const auth = betterAuth({
 								message: 'Username is already taken',
 								status: 304,
 							})
-						}
-
-						const createdSlug = ctx.body.username
-							.toLowerCase()
-							.replace(/ /g, '-')
-							.replace(/[^a-zA-Z0-9-]/g, '')
-
-						return {
-							context: {
-								...ctx,
-								body: {
-									...ctx.body,
-									slug: createdSlug,
-								},
-							},
 						}
 					}
 					break
