@@ -85,42 +85,40 @@ export const posts = mysqlTable(
 		slug: varchar({ length: 256 }).$default(() => generateUniqueString(16)),
 		title: varchar({ length: 256 }),
 		content: longtext(),
-		userId: varchar('userId', { length: 256 }).references(() => user.id),
+		userId: varchar('user_id', { length: 36 })
+			.notNull()
+			.references(() => user.id),
 
 		createdAt: timestamp('created_at').notNull(),
 		updatedAt: timestamp('updated_at').notNull(),
 	},
-	(table) => {
-		return {
-			slugIndex: uniqueIndex('slug_idx').on(table.slug),
-			titleIndex: index('title_idx').on(table.title),
-		}
-	}
+	(table) => [uniqueIndex('slug_idx').on(table.slug), index('title_idx').on(table.title)]
 )
 
 export const comments = mysqlTable('comments', {
 	id: int().primaryKey().autoincrement(),
 	postId: int('post_id').references(() => posts.id),
 	text: varchar({ length: 256 }),
-	userId: varchar('userId', { length: 256 }).references(() => user.id),
+	userId: varchar('user_id', { length: 36 })
+		.notNull()
+		.references(() => user.id),
 })
 
 export const followers = mysqlTable(
 	'followers',
 	{
-		followerId: varchar('followerId', { length: 255 })
+		followerId: varchar('followerId', { length: 36 })
 			.notNull()
 			.references(() => user.id),
-		followingId: varchar('followingId', { length: 255 })
+		followingId: varchar('followingId', { length: 36 })
 			.notNull()
 			.references(() => user.id),
 		followedAt: timestamp('followedAt').notNull(),
 	},
-	(table) => {
-		return {
-			primaryKey: ['followerId', 'followingId'], // Define composite primary key here
-		}
-	}
+	(table) => [
+		// composite unique index
+		uniqueIndex('follower_following_idx').on(table.followerId, table.followingId),
+	]
 )
 
 export const likes = mysqlTable('likes', {
@@ -128,7 +126,7 @@ export const likes = mysqlTable('likes', {
 	postId: int('postId')
 		.notNull()
 		.references(() => posts.id),
-	userId: varchar('userId', { length: 255 })
+	userId: varchar('user_id', { length: 36 })
 		.notNull()
 		.references(() => user.id),
 	createdAt: timestamp('createdAt').notNull(),
@@ -136,10 +134,10 @@ export const likes = mysqlTable('likes', {
 
 export const messages = mysqlTable('messages', {
 	id: int('id').primaryKey().autoincrement(),
-	senderId: varchar('senderId', { length: 255 })
+	senderId: varchar('senderId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
-	receiverId: varchar('receiverId', { length: 255 })
+	receiverId: varchar('receiverId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
 	messageText: text('messageText').notNull(),
@@ -149,11 +147,11 @@ export const messages = mysqlTable('messages', {
 
 export const notifications = mysqlTable('notifications', {
 	id: int('id').primaryKey().autoincrement(),
-	userId: varchar('userId', { length: 255 })
+	userId: varchar('userId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
 	type: varchar('type', { length: 50 }).notNull(), // E.g., 'like', 'comment', 'follow'
-	relatedUserId: varchar('relatedUserId', { length: 255 }), // The user who triggered the notification
+	relatedUserId: varchar('relatedUserId', { length: 36 }), // If the notification is related to a user
 	postId: int('postId').references(() => posts.id), // If the notification is related to a post
 	createdAt: timestamp('createdAt').notNull(),
 	isRead: boolean('isRead').default(false),
@@ -164,7 +162,7 @@ export const shares = mysqlTable('shares', {
 	postId: int('postId')
 		.notNull()
 		.references(() => posts.id),
-	userId: varchar('userId', { length: 255 })
+	userId: varchar('userId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
 	createdAt: timestamp('createdAt').notNull(),
