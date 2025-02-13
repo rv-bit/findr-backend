@@ -1,4 +1,4 @@
-import { JoiXss } from '~/utils/utils'
+import { JoiXss } from '#utils/utils.js'
 
 export interface NewPostSchema {
 	slug?: string

@@ -1,4 +1,4 @@
-import { auth } from '~/utils/auth'
+import { auth } from '#utils/auth.js'
 import { fromNodeHeaders } from 'better-auth/node'
 import type { Request, Response, NextFunction } from 'express'
 

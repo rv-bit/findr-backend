@@ -6,13 +6,13 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin, createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 
-import config from '~/config'
+import config from '../config.js'
 
-import * as schema from '~/services/database/schema'
-import db from '~/services/database/database'
+import * as schema from '#services/database/schema.js'
+import db from '#services/database/database.js'
 
-import { sendEmail } from '~/services/email'
-import { deleteUserAvatar, uploadUserAvatar } from '~/services/s3/avatar-client'
+import { sendEmail } from '#services/email.js'
+// import { deleteUserAvatar, uploadUserAvatar } from '#services/s3/avatar-client.js'
 
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
 	return origin.startsWith('http') ? origin : `https://${origin}`
@@ -127,7 +127,7 @@ export const auth = betterAuth({
 				})
 			},
 			beforeDelete: async (user, request) => {
-				await deleteUserAvatar(user.image)
+				// await deleteUserAvatar(user.image)
 				// any other actions before deleting the user
 			},
 		},
@@ -212,13 +212,13 @@ export const auth = betterAuth({
 			},
 			update: {
 				after: async (user: User & { username?: string; about_description?: string }) => {
-					if (user?.id) {
-						const oldUserData = await db.select().from(schema.user).where(eq(schema.user.id, user.id))
-						if (oldUserData[0].image !== user.image) {
-							console.log('oldUserData[0].image:', oldUserData[0].image)
-							await deleteUserAvatar(oldUserData[0].image)
-						}
-					}
+					// if (user?.id) {
+					// 	const oldUserData = await db.select().from(schema.user).where(eq(schema.user.id, user.id))
+					// 	if (oldUserData[0].image !== user.image) {
+					// 		console.log('oldUserData[0].image:', oldUserData[0].image)
+					// 		await deleteUserAvatar(oldUserData[0].image)
+					// 	}
+					// }
 				},
 			},
 		},
@@ -229,23 +229,22 @@ export const auth = betterAuth({
 			switch (ctx.path) {
 				case '/update-user':
 					if (ctx.body.image) {
-						const avatarUrl = await uploadUserAvatar(ctx.body.image)
-						if (!avatarUrl) {
-							throw new APIError('BAD_REQUEST', {
-								message: 'Failed to upload image',
-								status: 304,
-							})
-						}
-
-						return {
-							context: {
-								...ctx,
-								body: {
-									...ctx.body,
-									image: avatarUrl,
-								},
-							},
-						}
+						// const avatarUrl = await uploadUserAvatar(ctx.body.image)
+						// if (!avatarUrl) {
+						// 	throw new APIError('BAD_REQUEST', {
+						// 		message: 'Failed to upload image',
+						// 		status: 304,
+						// 	})
+						// }
+						// return {
+						// 	context: {
+						// 		...ctx,
+						// 		body: {
+						// 			...ctx.body,
+						// 			image: avatarUrl,
+						// 		},
+						// 	},
+						// }
 					}
 
 					if (ctx.body.username) {
@@ -282,6 +281,7 @@ export const auth = betterAuth({
 			otpOptions: {
 				async sendOTP({ user, otp }, request) {
 					await sendEmail({
+						// @ts-ignore
 						to: user.email,
 						subject: 'Two factor authentication OTP',
 						text: `Your OTP is: ${otp}`,
