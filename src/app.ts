@@ -6,10 +6,10 @@ import cors from 'cors'
 import path from 'path'
 
 import { toNodeHandler } from 'better-auth/node'
-import { auth, limiter } from '#utils/index.js'
+import { auth, limiter } from '~/utils/index'
 
-import routes from '#routes/index.js'
-import * as middlewares from './middlewares.js'
+import routes from '~/routes/index'
+import * as middlewares from './middlewares'
 
 const app = express()
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
