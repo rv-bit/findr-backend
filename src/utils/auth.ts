@@ -265,7 +265,7 @@ export const auth = betterAuth({
 			}
 		}),
 		after: createAuthMiddleware(async (ctx) => {
-			const url = process.env.NODE_ENV === 'development' ? process.env.FRONT_END_URL : process.env.FRONT_END_URL?.startsWith('http') ? process.env.FRONT_END_URL : `https://${process.env.FRONT_END_URL}`
+			const url = process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`
 
 			switch (ctx.query?.error) {
 				case 'account_already_linked_to_different_user':
