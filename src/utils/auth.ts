@@ -265,11 +265,13 @@ export const auth = betterAuth({
 			}
 		}),
 		after: createAuthMiddleware(async (ctx) => {
+			const url = process.env.NODE_ENV === 'development' ? process.env.FRONT_END_URL : process.env.FRONT_END_URL?.startsWith('http') ? process.env.FRONT_END_URL : `https://${process.env.FRONT_END_URL}`
+
 			switch (ctx.query?.error) {
 				case 'account_already_linked_to_different_user':
-					throw ctx.redirect('/error/?error=account_already_linked_to_different_user')
+					throw ctx.redirect(`${url}/error/?error=account_already_linked_to_different_user`)
 				case "email_doesn't_match":
-					throw ctx.redirect('/error/?error=email_doesnt_match')
+					throw ctx.redirect(`${url}/error/?error=email_doesnt_match`)
 				default:
 					break
 			}
@@ -277,6 +279,7 @@ export const auth = betterAuth({
 	},
 
 	plugins: [
+		admin(),
 		username(),
 		admin(),
 		twoFactor({
