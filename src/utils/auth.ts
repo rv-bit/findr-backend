@@ -49,14 +49,14 @@ export const auth = betterAuth({
 	}),
 
 	basePath: '/auth',
-	baseURL: process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`,
+	baseURL: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL : process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`,
 	trustedOrigins: trustedOrigins || ['http://localhost:3000'],
 
 	socialProviders: {
 		github: {
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.BASE_URL + '/api/auth/callback/github/' : (process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + '/api/auth/callback/github/',
+			// redirectURI: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL + '/auth/callback/github/' : (process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`) + '/auth/callback/github/',
 			scope: ['user:email', 'read:user'],
 			mapProfileToUser(profile) {
 				return {
@@ -70,7 +70,7 @@ export const auth = betterAuth({
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.BASE_URL + '/api/auth/callback/google/' : (process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + '/api/auth/callback/google/',
+			// redirectURI: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL + '/auth/callback/google/' : (process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`) + '/auth/callback/google/',
 			scope: ['email', 'profile'],
 			mapProfileToUser(profile) {
 				return {
@@ -108,7 +108,7 @@ export const auth = betterAuth({
 
 				await sendEmail({
 					to: user.email, // verification email must be sent to the current user email to approve the change
-					subject: 'Approve email change',
+					subject: `Approve email change to - ${newEmail}`,
 					text: `Click the link to approve the change: ${newUrl}`,
 				})
 			},
@@ -152,6 +152,8 @@ export const auth = betterAuth({
 		sendOnSignUp: true,
 		autoSignInAfterVerification: false,
 		sendVerificationEmail: async ({ user, url, token }, request) => {
+			// if (!user) return // if user doesn't exist, don't send the email or the user just changed the email
+
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
 			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
