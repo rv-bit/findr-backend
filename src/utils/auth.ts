@@ -1,17 +1,18 @@
 import 'dotenv/config'
 
-import { betterAuth } from 'better-auth'
+import { betterAuth, type User } from 'better-auth'
 import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
+import { admin, createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 
-import config from '../config.js'
+import config from '~/config'
 
-import * as schema from '#services/database/schema.js'
-import db from '#services/database/database.js'
+import * as schema from '~/services/database/schema'
+import db from '~/services/database/database'
 
-import { sendEmail } from '#services/email.js'
+import { sendEmail } from '~/services/email'
+import { deleteUserAvatar, uploadUserAvatar } from '~/services/s3/avatar-client'
 
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
 	return origin.startsWith('http') ? origin : `https://${origin}`
@@ -47,14 +48,15 @@ export const auth = betterAuth({
 		schema: schema,
 	}),
 
-	baseURL: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`,
+	basePath: '/auth',
+	baseURL: process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`,
 	trustedOrigins: trustedOrigins || ['http://localhost:3000'],
 
 	socialProviders: {
 		github: {
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/auth/callback/github/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/auth/callback/github/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.BASE_URL + '/api/auth/callback/github/' : (process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + '/api/auth/callback/github/',
 			scope: ['user:email', 'read:user'],
 			mapProfileToUser(profile) {
 				return {
@@ -68,7 +70,7 @@ export const auth = betterAuth({
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-			redirectURI: process.env.NODE_ENV === 'development' ? process.env.AUTH_URL + '/auth/callback/google/' : (process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + '/auth/callback/google/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.BASE_URL + '/api/auth/callback/google/' : (process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + '/api/auth/callback/google/',
 			scope: ['email', 'profile'],
 			mapProfileToUser(profile) {
 				return {
@@ -81,37 +83,6 @@ export const auth = betterAuth({
 		},
 	},
 
-	emailAndPassword: {
-		enabled: true,
-		sendResetPassword: async ({ user, url, token }, request) => {
-			const urlObj = new URL(url)
-			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + callbackURL! + '?token=' + token
-
-			await sendEmail({
-				to: user.email,
-				subject: 'Reset your password',
-				text: `Click the link to reset your password: ${newUrl}`,
-			})
-		},
-	},
-
-	emailVerification: {
-		sendOnSignUp: true,
-		autoSignInAfterVerification: true,
-		sendVerificationEmail: async ({ user, url, token }, request) => {
-			const urlObj = new URL(url)
-			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + callbackURL! + '?token=' + token
-
-			await sendEmail({
-				to: user.email,
-				subject: 'Verify your email address',
-				text: `Click the link to verify your email: ${newUrl}`,
-			})
-		},
-	},
-
 	account: {
 		accountLinking: {
 			enabled: true,
@@ -121,12 +92,19 @@ export const auth = betterAuth({
 	},
 
 	user: {
+		additionalFields: {
+			about_description: {
+				type: 'string',
+				required: false,
+				defaultValue: '',
+			},
+		},
 		changeEmail: {
 			enabled: true,
 			sendChangeEmailVerification: async ({ user, newEmail, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + callbackURL! + '?token=' + token
+				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
 
 				await sendEmail({
 					to: user.email, // verification email must be sent to the current user email to approve the change
@@ -140,7 +118,7 @@ export const auth = betterAuth({
 			sendDeleteAccountVerification: async ({ user, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.AUTH_URL : process.env.RAILWAY_PUBLIC_DOMAIN?.startsWith('http') ? process.env.RAILWAY_PUBLIC_DOMAIN : `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`) + callbackURL! + '?token=' + token
+				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
 
 				await sendEmail({
 					to: user.email,
@@ -148,6 +126,41 @@ export const auth = betterAuth({
 					text: `Click the link to delete your account: ${newUrl}`,
 				})
 			},
+			beforeDelete: async (user, request) => {
+				await deleteUserAvatar(user.image)
+				// any other actions before deleting the user
+			},
+		},
+	},
+
+	emailAndPassword: {
+		enabled: true,
+		sendResetPassword: async ({ user, url, token }, request) => {
+			const urlObj = new URL(url)
+			const callbackURL = urlObj.searchParams.get('callbackURL')
+			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+
+			await sendEmail({
+				to: user.email,
+				subject: 'Reset your password',
+				text: `Click the link to reset your password: ${newUrl}`,
+			})
+		},
+	},
+
+	emailVerification: {
+		sendOnSignUp: true,
+		autoSignInAfterVerification: false,
+		sendVerificationEmail: async ({ user, url, token }, request) => {
+			const urlObj = new URL(url)
+			const callbackURL = urlObj.searchParams.get('callbackURL')
+			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+
+			await sendEmail({
+				to: user.email,
+				subject: 'Verify your email address',
+				text: `Click the link to verify your email: ${newUrl}`,
+			})
 		},
 	},
 
@@ -157,21 +170,14 @@ export const auth = betterAuth({
 		freshAge: 0, // 60 * 60 * 24 = 1 day (if the session is older than 1 day, it's considered not fresh)
 
 		cookieCache: {
-			// Cache the session cookie for 5 minutes
+			// Cache the session cookie for 1 minute
 			enabled: true,
-			maxAge: 5 * 60, // Cache duration in seconds
-		},
-	},
-
-	advanced: {
-		crossSubDomainCookies: {
-			enabled: false, // Optional for now is false but in prod it should be with api.findr.blog
-			domain: 'example.com', // Optional. Defaults to the base url domain if not provided
+			maxAge: 1 * 60, // Cache duration in seconds
 		},
 	},
 
 	rateLimit: {
-		window: 60, // time window in seconds
+		window: 40, // time window in seconds
 		max: 100, // max requests in the window
 		customRules: {
 			// example of custom rate limit rules
@@ -180,7 +186,6 @@ export const auth = betterAuth({
 				max: 3,
 			},
 			'/two-factor/*': async (request) => {
-				// custom function to return rate limit window and max
 				return {
 					window: 10,
 					max: 3,
@@ -189,16 +194,68 @@ export const auth = betterAuth({
 		},
 	},
 
+	databaseHooks: {
+		user: {
+			create: {
+				before: async (user: User & { username?: string; about_description?: string }) => {
+					if (user.username) {
+						const isUsernameTaken = await db.select().from(schema.user).where(eq(schema.user.username, user.username))
+						if (isUsernameTaken.length > 0) {
+							return false
+						}
+					}
+
+					return {
+						data: user,
+					}
+				},
+			},
+			update: {
+				after: async (user: User & { username?: string; about_description?: string }) => {
+					if (user?.id) {
+						const oldUserData = await db.select().from(schema.user).where(eq(schema.user.id, user.id))
+						if (oldUserData[0].image !== user.image) {
+							console.log('oldUserData[0].image:', oldUserData[0].image)
+							await deleteUserAvatar(oldUserData[0].image)
+						}
+					}
+				},
+			},
+		},
+	},
+
 	hooks: {
 		before: createAuthMiddleware(async (ctx) => {
 			switch (ctx.path) {
 				case '/update-user':
-					const isUsernameTaken = await db.select().from(schema.user).where(eq(schema.user.username, ctx.body.username))
-					if (isUsernameTaken.length > 0) {
-						throw new APIError('BAD_REQUEST', {
-							message: 'Username is already taken',
-							status: 304,
-						})
+					if (ctx.body.image) {
+						const avatarUrl = await uploadUserAvatar(ctx.body.image)
+						if (!avatarUrl) {
+							throw new APIError('BAD_REQUEST', {
+								message: 'Failed to upload image',
+								status: 304,
+							})
+						}
+
+						return {
+							context: {
+								...ctx,
+								body: {
+									...ctx.body,
+									image: avatarUrl,
+								},
+							},
+						}
+					}
+
+					if (ctx.body.username) {
+						const isUsernameTaken = await db.select().from(schema.user).where(eq(schema.user.username, ctx.body.username))
+						if (isUsernameTaken.length > 0) {
+							throw new APIError('BAD_REQUEST', {
+								message: 'Username is already taken',
+								status: 304,
+							})
+						}
 					}
 					break
 				default:
@@ -219,7 +276,7 @@ export const auth = betterAuth({
 
 	plugins: [
 		username(),
-
+		admin(),
 		twoFactor({
 			issuer: config.APP_NAME,
 			otpOptions: {

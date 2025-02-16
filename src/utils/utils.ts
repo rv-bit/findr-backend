@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express'
-import Joi, { ObjectSchema } from 'joi'
+import type { Request, Response, NextFunction } from 'express'
+import Joi, { type ObjectSchema } from 'joi'
 import xss from 'xss'
 
 const xssOptions = {

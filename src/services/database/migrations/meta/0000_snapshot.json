@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "1ac6b391-1595-46c1-9d5d-92546ec6e7e7",
+  "id": "f343414b-919f-41a2-9483-826c7747f3ba",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -150,11 +150,11 @@
           "notNull": false,
           "autoincrement": false
         },
-        "userId": {
-          "name": "userId",
-          "type": "varchar(256)",
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
@@ -173,12 +173,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "comments_userId_user_id_fk": {
-          "name": "comments_userId_user_id_fk",
+        "comments_user_id_user_id_fk": {
+          "name": "comments_user_id_user_id_fk",
           "tableFrom": "comments",
           "tableTo": "user",
           "columnsFrom": [
-            "userId"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -203,14 +203,14 @@
       "columns": {
         "followerId": {
           "name": "followerId",
-          "type": "varchar(255)",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "followingId": {
           "name": "followingId",
-          "type": "varchar(255)",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -223,7 +223,16 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "follower_following_idx": {
+          "name": "follower_following_idx",
+          "columns": [
+            "followerId",
+            "followingId"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "followers_followerId_user_id_fk": {
           "name": "followers_followerId_user_id_fk",
@@ -273,9 +282,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "userId": {
-          "name": "userId",
-          "type": "varchar(255)",
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -303,12 +312,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "likes_userId_user_id_fk": {
-          "name": "likes_userId_user_id_fk",
+        "likes_user_id_user_id_fk": {
+          "name": "likes_user_id_user_id_fk",
           "tableFrom": "likes",
           "tableTo": "user",
           "columnsFrom": [
-            "userId"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -340,14 +349,14 @@
         },
         "senderId": {
           "name": "senderId",
-          "type": "varchar(255)",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "receiverId": {
           "name": "receiverId",
-          "type": "varchar(255)",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -427,7 +436,7 @@
         },
         "userId": {
           "name": "userId",
-          "type": "varchar(255)",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -441,7 +450,7 @@
         },
         "relatedUserId": {
           "name": "relatedUserId",
-          "type": "varchar(255)",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -533,11 +542,32 @@
           "notNull": false,
           "autoincrement": false
         },
-        "userId": {
-          "name": "userId",
-          "type": "varchar(256)",
+        "content": {
+          "name": "content",
+          "type": "longtext",
           "primaryKey": false,
           "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
@@ -558,12 +588,12 @@
         }
       },
       "foreignKeys": {
-        "posts_userId_user_id_fk": {
-          "name": "posts_userId_user_id_fk",
+        "posts_user_id_user_id_fk": {
+          "name": "posts_user_id_user_id_fk",
           "tableFrom": "posts",
           "tableTo": "user",
           "columnsFrom": [
-            "userId"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -641,6 +671,13 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "impersonated_by": {
+          "name": "impersonated_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -696,7 +733,7 @@
         },
         "userId": {
           "name": "userId",
-          "type": "varchar(255)",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -860,6 +897,41 @@
           "notNull": true,
           "autoincrement": false
         },
+        "username": {
+          "name": "username",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "banned": {
+          "name": "banned",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ban_reason": {
+          "name": "ban_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ban_expires": {
+          "name": "ban_expires",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "two_factor_enabled": {
           "name": "two_factor_enabled",
           "type": "boolean",
@@ -867,9 +939,9 @@
           "notNull": false,
           "autoincrement": false
         },
-        "username": {
-          "name": "username",
-          "type": "varchar(255)",
+        "about_description": {
+          "name": "about_description",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
