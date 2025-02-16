@@ -19,6 +19,10 @@
 		"db:migrate-prod": "drizzle-kit migrate --config=drizzle-prod.config.ts",
 		"db:push-prod": "drizzle-kit push --config=drizzle-prod.config.ts",
 		"db:studio-prod": "drizzle-kit studio --config=drizzle-prod.config.ts",
+		"db:generate-staging": "tsc -p tsconfig.json && drizzle-kit generate --config=drizzle-staging.config.ts",
+		"db:migrate-staging": "drizzle-kit migrate --config=drizzle-staging.config.ts",
+		"db:push-staging": "drizzle-kit push --config=drizzle-staging.config.ts",
+		"db:studio-staging": "drizzle-kit studio --config=drizzle-staging.config.ts",
 		"test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
 	},
 	"dependencies": {
