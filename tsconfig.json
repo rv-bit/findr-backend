@@ -1,24 +1,28 @@
 {
-  "compilerOptions": {
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-    "outDir": "./dist",
+	"compilerOptions": {
+		"baseUrl": "./",
+		"paths": {
+			"#routes/*": ["./src/routes/*"],
+			"#controllers/*": ["./src/controllers/*"],
+			"#utils/*": ["./src/utils/*"],
+			"#services/*": ["./src/services/*"]
+		},
+		"outDir": "./dist",
 
-    "target": "ES2020",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "sourceMap": true,
+		"target": "ES2020",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"sourceMap": true,
+		"allowSyntheticDefaultImports": true,
 
-    "checkJs": true,
-    "allowJs": true,
+		"checkJs": true,
+		"allowJs": true,
 
-    "forceConsistentCasingInFileNames": true,
+		"forceConsistentCasingInFileNames": true,
 
-    "skipLibCheck": true,
-    "strict": true,
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "coverage"]
+		"skipLibCheck": true,
+		"strict": true
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", "dist", "coverage"]
 }

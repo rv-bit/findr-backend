@@ -1,17 +1,16 @@
 import 'dotenv/config'
 import { drizzle } from 'drizzle-orm/mysql2'
-import mysql from 'mysql2/promise'
+import { createPool } from 'mysql2'
 
-const poolConnection = mysql.createPool({
+const pool = createPool({
 	host: process.env.MYSQLHOST,
 	user: process.env.MYSQLUSER,
-	database: process.env.MYSQL_DATABASE,
 	password: process.env.MYSQLPASSWORD,
-	port: parseInt(process.env.MYSQLPORT || '3306'),
+	database: process.env.MYSQL_DATABASE,
 })
 
 const db = drizzle({
-	client: poolConnection,
+	client: pool,
 })
 
 export default db
