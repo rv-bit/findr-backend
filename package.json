@@ -28,11 +28,11 @@
 	"dependencies": {
 		"@auth/drizzle-adapter": "^1.7.4",
 		"@auth/express": "^0.8.4",
-		"axios": "^1.7.9",
-		"better-auth": "^1.1.6",
+		"axios": "^1.8.1",
+		"better-auth": "^1.1.21",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.7",
-		"drizzle-orm": "^0.39.3",
+		"drizzle-orm": "^0.40.0",
 		"express": "^4.21.2",
 		"express-rate-limit": "^7.5.0",
 		"helmet": "^8.0.0",
@@ -43,11 +43,11 @@
 		"xss": "^1.0.15"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.2.2",
+		"@types/bun": "^1.2.4",
 		"@types/cors": "^2.8.17",
 		"@types/express": "^5.0.0",
 		"@types/nodemailer": "^6.4.17",
-		"drizzle-kit": "^0.30.4",
+		"drizzle-kit": "^0.30.5",
 		"tsconfig-paths": "^4.2.0",
 		"typescript": "^5.7.3"
 	}
