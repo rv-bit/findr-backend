@@ -13,6 +13,7 @@ import db from '~/services/database/database'
 
 import { sendEmail } from '~/services/email'
 import { deleteUserAvatar, uploadUserAvatar } from '~/services/s3/avatar-client'
+import logger from './logger'
 
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
 	return origin.startsWith('http') ? origin : `https://${origin}`
@@ -47,6 +48,14 @@ export const auth = betterAuth({
 		provider: 'mysql',
 		schema: schema,
 	}),
+
+	logger: {
+		disabled: process.env.NODE_ENV === 'test',
+		// level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
+		log(level, message, ...args) {
+			logger[level](message, ...args)
+		},
+	},
 
 	basePath: '/auth',
 	baseURL: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL : process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`,
@@ -152,7 +161,7 @@ export const auth = betterAuth({
 		sendOnSignUp: true,
 		autoSignInAfterVerification: false,
 		sendVerificationEmail: async ({ user, url, token }, request) => {
-			// if (!user) return // if user doesn't exist, don't send the email or the user just changed the email
+			if (!user) return // if user doesn't exist, don't send the email or the user just changed the email
 
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
