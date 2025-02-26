@@ -3,8 +3,9 @@ import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
 import { handler } from '~/utils/index'
-import type { NewPostSchema } from '~/routes/post/schema'
 import logger from '~/utils/logger'
+
+import type { NewPostSchema } from '~/routes/post/schema'
 
 export const getAllPosts = handler(async (req: Request, res: Response) => {
 	res.status(200).json({
