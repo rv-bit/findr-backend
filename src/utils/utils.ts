@@ -3,9 +3,7 @@ import Joi, { type ObjectSchema } from 'joi'
 import xss from 'xss'
 
 const xssOptions = {
-	whiteList: {}, // empty, means filter out all tags
-	stripIgnoreTag: true, // filter out all HTML not in the whitelist
-	stripIgnoreTagBody: ['script'], // the script tag is a special case, we need to filter out its content
+	singleQuotedAttributeValue: true, // Use single quotes for attributes
 }
 
 // Create a custom Joi extension to sanitize strings
