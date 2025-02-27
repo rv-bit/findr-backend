@@ -12,6 +12,9 @@
 		"moduleDetection": "force",
 		"allowJs": true,
 
+		// for React components
+		"jsx": "react-jsx",
+
 		// Bundler mode
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,
