@@ -19,11 +19,12 @@ export const user = mysqlTable('user', {
 	image: text('image'),
 	createdAt: timestamp('created_at').notNull(),
 	updatedAt: timestamp('updated_at').notNull(),
-	username: varchar('username', { length: 255 }).unique(),
 	role: text('role'),
 	banned: boolean('banned'),
 	banReason: text('ban_reason'),
 	banExpires: timestamp('ban_expires'),
+	username: varchar('username', { length: 255 }).unique(),
+	displayUsername: text('display_username'),
 	twoFactorEnabled: boolean('two_factor_enabled'),
 	about_description: text('about_description'),
 })
@@ -38,7 +39,7 @@ export const session = mysqlTable('session', {
 	userAgent: text('user_agent'),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: 'cascade' }),
 	impersonatedBy: text('impersonated_by'),
 })
 
@@ -48,7 +49,7 @@ export const account = mysqlTable('account', {
 	providerId: text('provider_id').notNull(),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: 'cascade' }),
 	accessToken: text('access_token'),
 	refreshToken: text('refresh_token'),
 	idToken: text('id_token'),
@@ -75,7 +76,7 @@ export const twoFactor = mysqlTable('two_factor', {
 	backupCodes: text('backup_codes').notNull(),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: 'cascade' }),
 })
 
 export const posts = mysqlTable(
