@@ -1,40 +1,37 @@
+import type { Context, Next } from 'hono'
 import { auth } from '~/utils/auth'
-import { fromNodeHeaders } from 'better-auth/node'
-import type { Request, Response, NextFunction } from 'express'
 
-export function notFoundHandler(req: Request, res: Response, next: NextFunction) {
-	const message = `Not Found - ${req.originalUrl}`
-	res.status(404)
-	res.json({ message })
-}
+// import { fromNodeHeaders } from 'better-auth/node'
+// import type { Request, Response, NextFunction } from 'express'
 
-export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
-	const statusCode = res.statusCode !== 200 ? res.statusCode : 500
-	res.status(statusCode)
+// export function notFoundHandler(req: Request, res: Response, next: NextFunction) {
+// 	const message = `Not Found - ${req.originalUrl}`
+// 	res.status(404)
+// 	res.json({ message })
+// }
 
-	const responseBody = {
-		message: err.message,
-		stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
-	}
+// export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+// 	const statusCode = res.statusCode !== 200 ? res.statusCode : 500
+// 	res.status(statusCode)
 
-	console.error(err)
-	res.json(responseBody)
-}
+// 	const responseBody = {
+// 		message: err.message,
+// 		stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
+// 	}
+
+// 	console.error(err)
+// 	res.json(responseBody)
+// }
 
 export const authHandler = () => {
-	return async (req: Request, res: Response, next: NextFunction) => {
-		const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })
+	return async (c: Context, next: Next) => {
+		const session = await auth.api.getSession({ headers: c.req.raw.headers as Headers })
 
 		if (!session || !session.user) {
-			return res.status(401).json({
-				error: 'Unauthorized',
-			})
+			return c.json({ message: 'Unauthorized' }, { status: 200 })
 		}
 
-		req.body = {
-			...req.body,
-			userId: session.user.id,
-		}
+		c.set('userId', session.user)
 		next()
 	}
 }

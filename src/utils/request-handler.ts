@@ -1,11 +1,11 @@
-import type { Request, RequestHandler, Response } from 'express'
+import type { Context, Next } from 'hono'
 
-type Handler = (fn: (req: Request, res: Response) => Promise<void> | void) => RequestHandler
+type Handler = (fn: (c: Context) => Promise<void> | void) => (c: Context, next: Next) => Promise<void> | void
 
-export const handler: Handler = (fn) => async (req, res, next) => {
+export const handler: Handler = (fn) => async (c: Context, next: Next) => {
 	try {
-		await fn(req, res)
+		await fn(c)
 	} catch (error) {
-		next(error)
+		next()
 	}
 }

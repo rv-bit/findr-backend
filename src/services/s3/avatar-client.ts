@@ -1,6 +1,4 @@
-import { S3Client } from 'bun'
-
-export const S3_CLIENT_AVATAR_BUCKET = new S3Client({
+export const S3_CLIENT_AVATAR_BUCKET = new Bun.S3Client({
 	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 	bucket: 'avatar-findr',
