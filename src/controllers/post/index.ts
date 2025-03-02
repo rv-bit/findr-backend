@@ -41,7 +41,8 @@ export const testGetAllPosts = handler(async (req: Request, res: Response) => {
 })
 
 export const testWritePosts = handler(async (req: Request, res: Response) => {
-	for (let i = 4; i < 1000; i++) {
+	const length = await db.$count(schema.posts)
+	for (let i = length + 1; i < length + 1000; i++) {
 		const post = await db.insert(schema.posts).values({
 			slug: 'test-post' + i,
 			title: 'Test Post' + i,
