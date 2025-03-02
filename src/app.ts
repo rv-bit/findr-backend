@@ -10,10 +10,10 @@ import { cors } from 'hono/cors'
 
 // import { toNodeHandler } from 'better-auth/node'
 import { auth } from '~/utils/index'
+import logger from './utils/logger'
 
 import * as schema from '~/services/database/schema'
 import db from './services/database/database'
-import logger from './utils/logger'
 
 // import routes from '~/routes/index'
 // import * as middlewares from './middlewares'
@@ -59,24 +59,35 @@ const corsOptions = {
 // app.use(middlewares.errorHandler)
 
 app.use(cors(corsOptions))
-app.use(
-	rateLimiter({
-		windowMs: 15 * 60 * 1000, // 15 minutes
-		limit: 20, // limit each IP to 100 requests per windowMs
-		standardHeaders: 'draft-6', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-		keyGenerator: (c) => 'limiter',
-	})
-)
+// app.use(
+// 	rateLimiter({
+// 		windowMs: 15 * 60 * 1000, // 15 minutes
+// 		limit: 20, // limit each IP to 100 requests per windowMs
+// 		standardHeaders: 'draft-6', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+// 		keyGenerator: (c) => 'limiter',
+// 	})
+// )
 
 app.on(['POST', 'GET'], '/auth/**', (c) => auth.handler(c.req.raw))
 app.get('/', (c) => c.text('Hello Bun!'))
-app.get('/read', async (c) => {
-	const posts = (await db.select().from(schema.posts)).entries()
+app.get('/v0/post/read', async (c) => {
+	const posts = await db.select().from(schema.posts)
 
-	c.json(posts)
+	const allPosts = posts.map((post) => {
+		return {
+			slug: post.slug,
+			title: post.title,
+			content: post.content,
+			userId: post.userId,
+			createdAt: post.createdAt,
+			updatedAt: post.updatedAt,
+		}
+	})
+
+	return c.json(allPosts)
 })
-app.get('/write', async (c) => {
-	for (let i = 4; i < 1000; i++) {
+app.get('/v0/post/write', async (c) => {
+	for (let i = 1; i <= 100; i++) {
 		const post = await db.insert(schema.posts).values({
 			slug: 'test-post' + i,
 			title: 'Test Post' + i,
@@ -88,19 +99,18 @@ app.get('/write', async (c) => {
 		})
 
 		if (!post) {
-			c.json(
+			logger.error('Failed to create post', { post })
+
+			return c.json(
 				{
 					message: 'Failed to create post',
 				},
-				500
+				200
 			)
-
-			logger.error('Failed to create post', { post })
-			return
 		}
 
 		// for each new entry just return success
-		c.json(
+		return c.json(
 			{
 				message: 'Success',
 			},
