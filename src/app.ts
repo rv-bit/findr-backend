@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { Hono } from 'hono'
+import { Hono, type Context } from 'hono'
 import { rateLimiter } from 'hono-rate-limiter'
 
 import { cors } from 'hono/cors'
@@ -68,10 +68,10 @@ app.use(cors(corsOptions))
 // 	})
 // )
 
-app.on(['POST', 'GET'], '/auth/**', (c) => auth.handler(c.req.raw))
-app.get('/', (c) => c.text('Hello Bun!'))
-app.get('/v0/post/read', async (c) => {
-	const posts = await db.select().from(schema.posts)
+app.on(['POST', 'GET'], '/auth/**', (c: Context) => auth.handler(c.req.raw))
+app.get('/', (c: Context) => c.text('Hello Bun!'))
+app.get('/v0/post/read', async (c: Context) => {
+	const posts = await db.select().from(schema.posts).limit(5000)
 
 	const allPosts = posts.map((post) => {
 		return {
@@ -86,7 +86,7 @@ app.get('/v0/post/read', async (c) => {
 
 	return c.json(allPosts)
 })
-app.get('/v0/post/write', async (c) => {
+app.get('/v0/post/write', async (c: Context) => {
 	const length = await db.$count(schema.posts)
 	for (let i = length + 1; i < length + 1000; i++) {
 		const post = await db.insert(schema.posts).values({
