@@ -71,7 +71,7 @@ app.use(cors(corsOptions))
 app.on(['POST', 'GET'], '/auth/**', (c: Context) => auth.handler(c.req.raw))
 app.get('/', (c: Context) => c.text('Hello Bun!'))
 app.get('/v0/post/read', async (c: Context) => {
-	const posts = await db.select().from(schema.posts).limit(5000)
+	const posts = await db.select().from(schema.posts).limit(500)
 
 	const allPosts = posts.map((post) => {
 		return {
@@ -88,36 +88,29 @@ app.get('/v0/post/read', async (c: Context) => {
 })
 app.get('/v0/post/write', async (c: Context) => {
 	const length = await db.$count(schema.posts)
+	const posts: schema.InsertPosts[] = []
+
 	for (let i = length + 1; i < length + 1000; i++) {
-		const post = await db.insert(schema.posts).values({
-			slug: 'test-post' + i,
-			title: 'Test Post' + i,
-			content: 'This is a test post' + i,
+		posts.push({
+			slug: `test-post-${i}-${Date.now()}`,
+			title: 'Test Post ' + i,
+			content: 'This is a test post ' + i,
 			userId: 'o3P6NXURD4LwOiwEF8xryx4S9bXj4Jin',
-
-			createdAt: new Date(), // Use the current date as the createdAt value
-			updatedAt: new Date(), // Use the current date as the updatedAt value
+			createdAt: new Date(),
+			updatedAt: new Date(),
 		})
-
-		if (!post) {
-			logger.error('Failed to create post', { post })
-
-			return c.json(
-				{
-					message: 'Failed to create post',
-				},
-				200
-			)
-		}
-
-		// for each new entry just return success
-		return c.json(
-			{
-				message: 'Success',
-			},
-			200
-		)
 	}
+
+	await db.transaction(async (tx) => {
+		await tx.insert(schema.posts).values(posts)
+	})
+
+	return c.json(
+		{
+			message: 'Success',
+		},
+		200
+	)
 })
 
 export default app
