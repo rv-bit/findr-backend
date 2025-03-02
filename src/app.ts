@@ -11,6 +11,10 @@ import { cors } from 'hono/cors'
 // import { toNodeHandler } from 'better-auth/node'
 import { auth } from '~/utils/index'
 
+import * as schema from '~/services/database/schema'
+import db from './services/database/database'
+import logger from './utils/logger'
+
 // import routes from '~/routes/index'
 // import * as middlewares from './middlewares'
 
@@ -66,5 +70,43 @@ app.use(
 
 app.on(['POST', 'GET'], '/auth/**', (c) => auth.handler(c.req.raw))
 app.get('/', (c) => c.text('Hello Bun!'))
+app.get('/read', async (c) => {
+	const posts = (await db.select().from(schema.posts)).entries()
+
+	c.json(posts)
+})
+app.get('/write', async (c) => {
+	for (let i = 4; i < 1000; i++) {
+		const post = await db.insert(schema.posts).values({
+			slug: 'test-post' + i,
+			title: 'Test Post' + i,
+			content: 'This is a test post' + i,
+			userId: 'o3P6NXURD4LwOiwEF8xryx4S9bXj4Jin',
+
+			createdAt: new Date(), // Use the current date as the createdAt value
+			updatedAt: new Date(), // Use the current date as the updatedAt value
+		})
+
+		if (!post) {
+			c.json(
+				{
+					message: 'Failed to create post',
+				},
+				500
+			)
+
+			logger.error('Failed to create post', { post })
+			return
+		}
+
+		// for each new entry just return success
+		c.json(
+			{
+				message: 'Success',
+			},
+			200
+		)
+	}
+})
 
 export default app
