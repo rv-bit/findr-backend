@@ -2,21 +2,20 @@ import type { Context } from 'hono'
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
-import { handler } from '~/utils/index'
 import logger from '~/utils/logger'
 
 import type { NewPostSchema } from '~/routes/post/schema'
 
-export const getAllPosts = handler(async (c: Context) => {
+export const getAllPosts = async (c: Context) => {
 	c.json(
 		{
 			message: 'Hello World!',
 		},
 		200
 	)
-})
+}
 
-export const newTestPost = handler(async (c: Context) => {
+export const newTestPost = async (c: Context) => {
 	const { slug, title, content, userId } = c.get('body') as NewPostSchema
 
 	const post = await db.insert(schema.posts).values({
@@ -47,4 +46,4 @@ export const newTestPost = handler(async (c: Context) => {
 		},
 		200
 	)
-})
+}
