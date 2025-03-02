@@ -10,4 +10,7 @@ const router = Router()
 router.get('/', controller.getAllPosts)
 router.post('/insert', authHandler() as RequestHandler, validateRequest(newPostSchema) as RequestHandler, controller.newTestPost)
 
+router.get('/read', controller.testGetAllPosts)
+router.post('/write', controller.testWritePosts)
+
 export default router
