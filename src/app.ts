@@ -87,7 +87,8 @@ app.get('/v0/post/read', async (c) => {
 	return c.json(allPosts)
 })
 app.get('/v0/post/write', async (c) => {
-	for (let i = 1; i <= 100; i++) {
+	const length = await db.$count(schema.posts)
+	for (let i = length + 1; i < length + 1000; i++) {
 		const post = await db.insert(schema.posts).values({
 			slug: 'test-post' + i,
 			title: 'Test Post' + i,
