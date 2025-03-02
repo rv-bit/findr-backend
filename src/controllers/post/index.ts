@@ -14,7 +14,7 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 })
 
 export const testGetAllPosts = handler(async (req: Request, res: Response) => {
-	const posts = (await db.select().from(schema.posts)).entries()
+	const posts = await db.select().from(schema.posts)
 
 	if (!posts) {
 		res.status(401).json({
@@ -25,8 +25,19 @@ export const testGetAllPosts = handler(async (req: Request, res: Response) => {
 		return
 	}
 
+	const allPosts = posts.map((post) => {
+		return {
+			slug: post.slug,
+			title: post.title,
+			content: post.content,
+			userId: post.userId,
+			createdAt: post.createdAt,
+			updatedAt: post.updatedAt,
+		}
+	})
+
 	// return all posts
-	res.status(200).json(posts)
+	res.status(200).json(allPosts)
 })
 
 export const testWritePosts = handler(async (req: Request, res: Response) => {
