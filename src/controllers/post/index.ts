@@ -14,7 +14,7 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 })
 
 export const testGetAllPosts = handler(async (req: Request, res: Response) => {
-	const posts = await db.select().from(schema.posts)
+	const posts = await db.select().from(schema.posts).limit(500)
 
 	if (!posts) {
 		res.status(401).json({
@@ -42,31 +42,26 @@ export const testGetAllPosts = handler(async (req: Request, res: Response) => {
 
 export const testWritePosts = handler(async (req: Request, res: Response) => {
 	const length = await db.$count(schema.posts)
+	const posts: schema.InsertPosts[] = []
+
 	for (let i = length + 1; i < length + 1000; i++) {
-		const post = await db.insert(schema.posts).values({
-			slug: 'test-post' + i,
-			title: 'Test Post' + i,
-			content: 'This is a test post' + i,
+		posts.push({
+			slug: `test-post-${i}-${Date.now()}`,
+			title: 'Test Post ' + i,
+			content: 'This is a test post ' + i,
 			userId: 'o3P6NXURD4LwOiwEF8xryx4S9bXj4Jin',
-
-			createdAt: new Date(), // Use the current date as the createdAt value
-			updatedAt: new Date(), // Use the current date as the updatedAt value
-		})
-
-		if (!post) {
-			res.status(401).json({
-				message: 'Failed to create post',
-			})
-
-			logger.error('Failed to create post', { post })
-			return
-		}
-
-		// for each new entry just return success
-		res.status(200).json({
-			message: 'Success',
+			createdAt: new Date(),
+			updatedAt: new Date(),
 		})
 	}
+
+	await db.transaction(async (tx) => {
+		await tx.insert(schema.posts).values(posts)
+	})
+
+	res.status(200).json({
+		message: 'Success',
+	})
 })
 
 export const newTestPost = handler(async (req: Request, res: Response) => {
