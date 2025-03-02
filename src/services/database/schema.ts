@@ -179,6 +179,9 @@ type InsertSession = InferInsertModel<typeof session>
 type InsertAccount = InferInsertModel<typeof account>
 type InsertVerification = InferInsertModel<typeof verification>
 
+type Posts = InferSelectModel<typeof posts>
+type InsertPosts = InferInsertModel<typeof posts>
+
 type Followers = InferSelectModel<typeof followers>
 type InsertFollowers = InferInsertModel<typeof followers>
 
@@ -197,6 +200,7 @@ type InsertShares = InferInsertModel<typeof shares>
 export type { User, Session, Account, Verification }
 export type { InsertUser, InsertSession, InsertAccount, InsertVerification }
 
+export type { Posts, InsertPosts }
 export type { Followers, InsertFollowers }
 export type { Likes, InsertLikes }
 export type { Messages, InsertMessages }
