@@ -30,7 +30,7 @@
 		"@auth/express": "^0.9.0",
 		"@react-email/components": "^0.0.33",
 		"axios": "^1.8.1",
-		"better-auth": "^1.2.0",
+		"better-auth": "^1.2.1",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.7",
 		"drizzle-orm": "^0.40.0",
