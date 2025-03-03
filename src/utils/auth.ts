@@ -1,9 +1,11 @@
 import 'dotenv/config'
 
-import { betterAuth, type User } from 'better-auth'
+import { betterAuth } from 'better-auth'
+import type { User } from 'better-auth/types'
 import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin, createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
+
 import { eq } from 'drizzle-orm'
 
 import config from '~/config'
@@ -46,7 +48,7 @@ const createUniqueUsername = (username: string) => {
 }
 
 export const auth = betterAuth({
-	name: config.APP_NAME,
+	appName: config.APP_NAME,
 	database: drizzleAdapter(db, {
 		provider: 'mysql',
 		schema: schema,
@@ -54,10 +56,7 @@ export const auth = betterAuth({
 
 	logger: {
 		disabled: process.env.NODE_ENV === 'test',
-		// level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
-		log(level, message, ...args) {
-			logger[level](message, ...args)
-		},
+		level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
 	},
 
 	basePath: '/auth',
@@ -324,7 +323,6 @@ export const auth = betterAuth({
 	},
 
 	plugins: [
-		admin(),
 		username(),
 		admin(),
 		twoFactor({
