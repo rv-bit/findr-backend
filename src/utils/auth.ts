@@ -18,8 +18,6 @@ import { reactResetPasswordEmail } from '~/services/email/templates'
 
 import { deleteUserAvatar, uploadUserAvatar } from '~/services/s3/avatar-client'
 
-import logger from './logger'
-
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
 	return origin.startsWith('http') ? origin : `https://${origin}`
 })
@@ -54,13 +52,11 @@ export const auth = betterAuth({
 		schema: schema,
 	}),
 
-	logger: {
-		disabled: process.env.NODE_ENV === 'test',
-		level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
-	},
-
 	basePath: '/auth',
-	baseURL: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL : process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`,
+	baseURL:
+		process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL
+		: process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL
+		: `https://${process.env.BETTER_AUTH_URL}`,
 	trustedOrigins: trustedOrigins || ['http://localhost:3000'],
 
 	socialProviders: {
@@ -115,7 +111,13 @@ export const auth = betterAuth({
 			sendChangeEmailVerification: async ({ user, newEmail, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+				const newUrl =
+					(process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+					: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+					: `https://${process.env.BASE_URL}`) +
+					callbackURL! +
+					'?token=' +
+					token
 
 				await sendEmail({
 					to: user.email, // verification email must be sent to the current user email to approve the change
@@ -129,7 +131,13 @@ export const auth = betterAuth({
 			sendDeleteAccountVerification: async ({ user, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+				const newUrl =
+					(process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+					: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+					: `https://${process.env.BASE_URL}`) +
+					callbackURL! +
+					'?token=' +
+					token
 
 				await sendEmail({
 					to: user.email,
@@ -149,7 +157,13 @@ export const auth = betterAuth({
 		sendResetPassword: async ({ user, url, token }, request) => {
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+			const newUrl =
+				(process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+				: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+				: `https://${process.env.BASE_URL}`) +
+				callbackURL! +
+				'?token=' +
+				token
 
 			await sendEmail({
 				to: user.email,
@@ -170,7 +184,13 @@ export const auth = betterAuth({
 
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+			const newUrl =
+				(process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+				: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+				: `https://${process.env.BASE_URL}`) +
+				callbackURL! +
+				'?token=' +
+				token
 
 			await sendEmail({
 				to: user.email,
@@ -279,7 +299,10 @@ export const auth = betterAuth({
 			}
 		}),
 		after: createAuthMiddleware(async (ctx) => {
-			const url = process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`
+			const url =
+				process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+				: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+				: `https://${process.env.BASE_URL}`
 
 			switch (ctx.query?.error) {
 				case 'account_already_linked_to_different_user':
