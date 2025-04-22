@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'docker') 
 	app.use(express.static(path.join(__dirname, '../dist')))
 }
 
-app.all('/auth/*', toNodeHandler(auth))
+app.all('/auth/*splat', toNodeHandler(auth))
 
 app.use(express.json())
 app.use('/v0/', routes)
