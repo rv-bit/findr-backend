@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "f343414b-919f-41a2-9483-826c7747f3ba",
+  "id": "8707f34f-5007-4fbd-906e-ea7e27209fc5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -111,7 +111,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -131,16 +131,16 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "post_id": {
           "name": "post_id",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "text": {
@@ -153,6 +153,20 @@
         "user_id": {
           "name": "user_id",
           "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -270,14 +284,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "postId": {
           "name": "postId",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -342,10 +356,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "senderId": {
           "name": "senderId",
@@ -368,8 +382,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "sentAt": {
-          "name": "sentAt",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -429,10 +450,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "userId": {
           "name": "userId",
@@ -457,7 +478,7 @@
         },
         "postId": {
           "name": "postId",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -523,10 +544,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "slug": {
           "name": "slug",
@@ -692,7 +713,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -719,14 +740,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "postId": {
           "name": "postId",
-          "type": "int",
+          "type": "varchar(36)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -830,7 +851,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -897,13 +918,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "username": {
-          "name": "username",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "role": {
           "name": "role",
           "type": "text",
@@ -928,6 +942,20 @@
         "ban_expires": {
           "name": "ban_expires",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "display_username": {
+          "name": "display_username",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

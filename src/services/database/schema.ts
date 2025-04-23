@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, text, int, timestamp, boolean, uniqueIndex, index, longtext } from 'drizzle-orm/mysql-core'
+import { mysqlTable, varchar, text, timestamp, boolean, uniqueIndex, index, longtext } from 'drizzle-orm/mysql-core'
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm'
 
 const generateUniqueString = (length: number = 12): string => {
@@ -82,7 +82,7 @@ export const twoFactor = mysqlTable('two_factor', {
 export const posts = mysqlTable(
 	'posts',
 	{
-		id: int().primaryKey().autoincrement(),
+		id: varchar('id', { length: 36 }).primaryKey(),
 		slug: varchar({ length: 256 }).$default(() => generateUniqueString(16)),
 		title: varchar({ length: 256 }),
 		content: longtext(),
@@ -97,8 +97,10 @@ export const posts = mysqlTable(
 )
 
 export const comments = mysqlTable('comments', {
-	id: int().primaryKey().autoincrement(),
-	postId: int('post_id').references(() => posts.id),
+	id: varchar('id', { length: 36 }).primaryKey(),
+	postId: varchar('post_id', { length: 36 })
+		.notNull()
+		.references(() => posts.id),
 	text: varchar({ length: 256 }),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
@@ -125,8 +127,8 @@ export const followers = mysqlTable(
 )
 
 export const likes = mysqlTable('likes', {
-	id: int('id').primaryKey().autoincrement(),
-	postId: int('postId')
+	id: varchar('id', { length: 36 }).primaryKey(),
+	postId: varchar('postId', { length: 36 })
 		.notNull()
 		.references(() => posts.id),
 	userId: varchar('user_id', { length: 36 })
@@ -136,7 +138,7 @@ export const likes = mysqlTable('likes', {
 })
 
 export const messages = mysqlTable('messages', {
-	id: int('id').primaryKey().autoincrement(),
+	id: varchar('id', { length: 36 }).primaryKey(),
 	senderId: varchar('senderId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
@@ -150,20 +152,20 @@ export const messages = mysqlTable('messages', {
 })
 
 export const notifications = mysqlTable('notifications', {
-	id: int('id').primaryKey().autoincrement(),
+	id: varchar('id', { length: 36 }).primaryKey(),
 	userId: varchar('userId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
 	type: varchar('type', { length: 50 }).notNull(), // E.g., 'like', 'comment', 'follow'
 	relatedUserId: varchar('relatedUserId', { length: 36 }), // If the notification is related to a user
-	postId: int('postId').references(() => posts.id), // If the notification is related to a post
+	postId: varchar('postId', { length: 36 }).references(() => posts.id), // If the notification is related to a post
 	createdAt: timestamp('createdAt').notNull(),
 	isRead: boolean('isRead').default(false),
 })
 
 export const shares = mysqlTable('shares', {
-	id: int('id').primaryKey().autoincrement(),
-	postId: int('postId')
+	id: varchar('id', { length: 36 }).primaryKey(),
+	postId: varchar('postId', { length: 36 })
 		.notNull()
 		.references(() => posts.id),
 	userId: varchar('userId', { length: 36 })
