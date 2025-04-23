@@ -100,14 +100,20 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 			if (posts.length > 0) {
 				arrayPosts = await Promise.all(
 					posts.map(async (post: PostResponse) => {
-						const likes = await db.select().from(schema.likes).where(eq(schema.likes.postId, post.id))
+						const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
+						const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
+
+						const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
+						const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
+
+						const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
 						const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
 
-						post.likesCount = likes.length
+						post.likesCount = likes
 						post.commentsCount = comments.length
 
-						post.liked = likes.some((like) => like.userId === userIdString)
-
+						post.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
+						post.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
 						return post
 					})
 				)
@@ -139,14 +145,20 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 			if (posts.length > 0) {
 				arrayPosts = await Promise.all(
 					posts.map(async (post: PostResponse) => {
-						const likes = await db.select().from(schema.likes).where(eq(schema.likes.postId, post.id))
+						const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
+						const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
+
+						const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
+						const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
+
+						const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
 						const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
 
-						post.likesCount = likes.length
+						post.likesCount = likes
 						post.commentsCount = comments.length
 
-						post.liked = likes.some((like) => like.userId === userIdString)
-
+						post.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
+						post.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
 						return post
 					})
 				)
