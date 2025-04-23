@@ -105,8 +105,6 @@ export const newTestPost = handler(async (req: Request, res: Response) => {
 })
 
 export const upvotePost = handler(async (req: Request, res: Response) => {
-	console.log('upvotePost')
-
 	const { postId } = req.params
 	const { userId } = req.body as schema.InsertUpvote
 

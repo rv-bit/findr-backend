@@ -251,7 +251,6 @@ export const auth = betterAuth({
 					if (user?.id) {
 						const oldUserData = await db.select().from(schema.user).where(eq(schema.user.id, user.id))
 						if (oldUserData[0].image !== user.image) {
-							console.log('oldUserData[0].image:', oldUserData[0].image)
 							await deleteUserAvatar(oldUserData[0].image)
 						}
 					}
