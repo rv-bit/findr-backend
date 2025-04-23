@@ -15,6 +15,13 @@
       "when": 1740865351034,
       "tag": "0001_amused_slayback",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1745415601857,
+      "tag": "0002_loving_sheva_callister",
+      "breakpoints": true
     }
   ]
 }

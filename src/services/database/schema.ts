@@ -103,6 +103,8 @@ export const comments = mysqlTable('comments', {
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
 		.references(() => user.id),
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at').notNull(),
 })
 
 export const followers = mysqlTable(
@@ -142,7 +144,8 @@ export const messages = mysqlTable('messages', {
 		.notNull()
 		.references(() => user.id),
 	messageText: text('messageText').notNull(),
-	sentAt: timestamp('sentAt').notNull(),
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at').notNull(),
 	isRead: boolean('isRead').default(false),
 })
 
