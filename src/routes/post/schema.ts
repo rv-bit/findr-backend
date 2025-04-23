@@ -13,3 +13,8 @@ export const newPostSchema = JoiXss.object({
 	content: JoiXss.string().required().xss(),
 	userId: JoiXss.string().required(),
 })
+
+export const insertPostLikeSchema = JoiXss.object({
+	postId: JoiXss.string().required().xss(),
+	userId: JoiXss.string().required().xss(),
+})

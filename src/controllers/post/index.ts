@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
@@ -29,6 +29,7 @@ export const testGetAllPosts = handler(async (req: Request, res: Response) => {
 
 	const allPosts = posts.map((post) => {
 		return {
+			id: post.id,
 			slug: post.slug,
 			title: post.title,
 			content: post.content,
@@ -48,6 +49,7 @@ export const testWritePosts = handler(async (req: Request, res: Response) => {
 
 	for (let i = length + 1; i < length + 1000; i++) {
 		posts.push({
+			id: crypto.randomUUID(),
 			slug: `test-post-${i}-${Date.now()}`,
 			title: 'Test Post ' + i,
 			content: 'This is a test post ' + i,
@@ -78,6 +80,7 @@ export const newTestPost = handler(async (req: Request, res: Response) => {
 	await db
 		.insert(schema.posts)
 		.values({
+			id: crypto.randomUUID(),
 			slug: newSlug,
 			title,
 			content,
@@ -99,4 +102,31 @@ export const newTestPost = handler(async (req: Request, res: Response) => {
 	res.status(200).json({
 		data: 'Success',
 	})
+})
+
+export const likePost = handler(async (req: Request, res: Response) => {
+	const { postId } = req.params
+	const { userId } = req.body as schema.InsertLikes
+
+	const existingLike = await db
+		.select()
+		.from(schema.likes)
+		.where(and(eq(schema.likes.postId, postId), eq(schema.likes.userId, userId)))
+		.limit(1)
+
+	if (existingLike.length > 0) {
+		res.status(200).json({
+			data: 'Already liked',
+		})
+		return
+	}
+
+	// await db.insert(schema.likes).values({
+	// 	postId,
+	// 	userId,
+	// })
+
+	// res.status(200).json({
+	// 	data: 'Success',
+	// })
 })
