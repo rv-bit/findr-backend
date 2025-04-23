@@ -1,14 +1,16 @@
 export type CommentResponse = {
-	id: number
-	text: string
+	id: string
+	postId: string
+	text: string | null
 	userId: string
-	postId: number
 	createdAt: Date
 	updatedAt: Date
+
+	postTitle?: string | null
 }
 
 export type PostResponse = {
-	id: number
+	id: string
 	slug: string | null
 	title: string | null
 	content: string | null
@@ -17,5 +19,6 @@ export type PostResponse = {
 	updatedAt: Date
 
 	likesCount?: number
-	comments?: CommentResponse[]
+	commentsCount?: number
+	liked?: boolean
 }
