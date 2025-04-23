@@ -20,5 +20,7 @@ export type PostResponse = {
 
 	likesCount?: number
 	commentsCount?: number
-	liked?: boolean
+
+	upvoted?: boolean
+	downvoted?: boolean
 }

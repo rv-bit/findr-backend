@@ -104,29 +104,160 @@ export const newTestPost = handler(async (req: Request, res: Response) => {
 	})
 })
 
-export const likePost = handler(async (req: Request, res: Response) => {
-	const { postId } = req.params
-	const { userId } = req.body as schema.InsertLikes
+export const upvotePost = handler(async (req: Request, res: Response) => {
+	console.log('upvotePost')
 
-	const existingLike = await db
+	const { postId } = req.params
+	const { userId } = req.body as schema.InsertUpvote
+
+	const existingDownVote = await db
 		.select()
-		.from(schema.likes)
-		.where(and(eq(schema.likes.postId, postId), eq(schema.likes.userId, userId)))
+		.from(schema.downvotes)
+		.where(and(eq(schema.downvotes.postId, postId), eq(schema.downvotes.userId, userId)))
 		.limit(1)
 
-	if (existingLike.length > 0) {
+	const existingUpvote = await db
+		.select()
+		.from(schema.upvotes)
+		.where(and(eq(schema.upvotes.postId, postId), eq(schema.upvotes.userId, userId)))
+		.limit(1)
+
+	if (existingDownVote.length > 0) {
+		const existingDownvoteId = existingDownVote[0].id
+
+		await db
+			.delete(schema.downvotes)
+			.where(eq(schema.downvotes.id, existingDownvoteId))
+			.catch((error) => {
+				logger.error('Error removing downvote', { error })
+
+				res.status(401).json({
+					data: 'Failed to unlike post',
+				})
+
+				return null
+			})
+	}
+
+	if (existingUpvote.length > 0) {
+		const existingVoteId = existingUpvote[0].id
+
+		await db
+			.delete(schema.upvotes)
+			.where(eq(schema.upvotes.id, existingVoteId))
+			.catch((error) => {
+				logger.error('Error removing upvote', { error })
+
+				res.status(401).json({
+					data: 'Failed to unlike post',
+				})
+
+				return null
+			})
+
 		res.status(200).json({
-			data: 'Already liked',
+			data: 'Success',
 		})
 		return
 	}
 
-	// await db.insert(schema.likes).values({
-	// 	postId,
-	// 	userId,
-	// })
+	await db
+		.insert(schema.upvotes)
+		.values({
+			id: crypto.randomUUID(),
+			postId,
+			userId,
+			createdAt: new Date(), // Use the current date as the createdAt value
+		})
+		.catch((error) => {
+			logger.error('Error inserting upvote', { error })
 
-	// res.status(200).json({
-	// 	data: 'Success',
-	// })
+			res.status(401).json({
+				data: 'Failed to upvote post',
+			})
+
+			return null
+		})
+
+	res.status(200).json({
+		data: 'Success',
+	})
+})
+
+export const downvotePost = handler(async (req: Request, res: Response) => {
+	const { postId } = req.params
+	const { userId } = req.body as schema.InsertDownvote
+
+	const existingUpvote = await db
+		.select()
+		.from(schema.upvotes)
+		.where(and(eq(schema.upvotes.postId, postId), eq(schema.upvotes.userId, userId)))
+		.limit(1)
+
+	const existingDownVote = await db
+		.select()
+		.from(schema.downvotes)
+		.where(and(eq(schema.downvotes.postId, postId), eq(schema.downvotes.userId, userId)))
+		.limit(1)
+
+	if (existingUpvote.length > 0) {
+		const existingUpvoteId = existingUpvote[0].id
+
+		await db
+			.delete(schema.upvotes)
+			.where(eq(schema.upvotes.id, existingUpvoteId))
+			.catch((error) => {
+				logger.error('Error removing upvote', { error })
+
+				res.status(401).json({
+					data: 'Failed to unlike post',
+				})
+
+				return null
+			})
+	}
+
+	if (existingDownVote.length > 0) {
+		const existingDownvoteId = existingDownVote[0].id
+
+		await db
+			.delete(schema.downvotes)
+			.where(eq(schema.downvotes.id, existingDownvoteId))
+			.catch((error) => {
+				logger.error('Error removing downvote', { error })
+
+				res.status(401).json({
+					data: 'Failed to unlike post',
+				})
+
+				return null
+			})
+
+		res.status(200).json({
+			data: 'Success',
+		})
+		return
+	}
+
+	await db
+		.insert(schema.downvotes)
+		.values({
+			id: crypto.randomUUID(),
+			postId,
+			userId,
+			createdAt: new Date(), // Use the current date as the createdAt value
+		})
+		.catch((error) => {
+			logger.error('Error inserting downvote', { error })
+
+			res.status(401).json({
+				data: 'Failed to downvote post',
+			})
+
+			return null
+		})
+
+	res.status(200).json({
+		data: 'Success',
+	})
 })
