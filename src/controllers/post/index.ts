@@ -1,4 +1,6 @@
 import type { Request, Response } from 'express'
+import { eq } from 'drizzle-orm'
+
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
@@ -66,27 +68,35 @@ export const testWritePosts = handler(async (req: Request, res: Response) => {
 
 export const newTestPost = handler(async (req: Request, res: Response) => {
 	const { slug, title, content, userId } = req.body as NewPostSchema
+	let newSlug = slug
 
-	const post = await db.insert(schema.posts).values({
-		slug,
-		title,
-		content,
-		userId,
-
-		createdAt: new Date(), // Use the current date as the createdAt value
-		updatedAt: new Date(), // Use the current date as the updatedAt value
-	})
-
-	if (!post) {
-		res.status(401).json({
-			message: 'Failed to create post',
-		})
-
-		logger.error('Failed to create post', { post })
-		return
+	const existingPost = await db.select().from(schema.posts).where(eq(schema.posts.slug, slug)).limit(1)
+	if (existingPost.length > 0) {
+		newSlug = `${slug}-${existingPost.length + 1}`
 	}
 
+	await db
+		.insert(schema.posts)
+		.values({
+			slug: newSlug,
+			title,
+			content,
+			userId,
+
+			createdAt: new Date(), // Use the current date as the createdAt value
+			updatedAt: new Date(), // Use the current date as the updatedAt value
+		})
+		.catch((error) => {
+			logger.error('Error inserting post', { error })
+
+			res.status(401).json({
+				data: 'Failed to create post',
+			})
+
+			return null
+		})
+
 	res.status(200).json({
-		message: 'Success',
+		data: 'Success',
 	})
 })
