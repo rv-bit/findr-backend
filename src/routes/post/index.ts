@@ -1,9 +1,10 @@
 import { Router, type RequestHandler } from 'express'
 import { validateRequest } from '~/utils/index'
-import { newPostSchema } from './schema'
 
 import * as controller from '~/controllers/post/index'
 import { authHandler } from '~/middlewares'
+
+import { newPostSchema } from './schema'
 
 const router = Router()
 
