@@ -126,7 +126,18 @@ export const followers = mysqlTable(
 	]
 )
 
-export const likes = mysqlTable('likes', {
+export const upvotes = mysqlTable('upvotes', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	postId: varchar('postId', { length: 36 })
+		.notNull()
+		.references(() => posts.id),
+	userId: varchar('user_id', { length: 36 })
+		.notNull()
+		.references(() => user.id),
+	createdAt: timestamp('createdAt').notNull(),
+})
+
+export const downvotes = mysqlTable('downvotes', {
 	id: varchar('id', { length: 36 }).primaryKey(),
 	postId: varchar('postId', { length: 36 })
 		.notNull()
@@ -190,8 +201,11 @@ type InsertPosts = InferInsertModel<typeof posts>
 type Followers = InferSelectModel<typeof followers>
 type InsertFollowers = InferInsertModel<typeof followers>
 
-type Likes = InferSelectModel<typeof likes>
-type InsertLikes = InferInsertModel<typeof likes>
+type Upvote = InferSelectModel<typeof upvotes>
+type InsertUpvote = InferInsertModel<typeof upvotes>
+
+type Downvote = InferSelectModel<typeof downvotes>
+type InsertDownvote = InferInsertModel<typeof downvotes>
 
 type Messages = InferSelectModel<typeof messages>
 type InsertMessages = InferInsertModel<typeof messages>
@@ -207,7 +221,10 @@ export type { InsertUser, InsertSession, InsertAccount, InsertVerification }
 
 export type { Posts, InsertPosts }
 export type { Followers, InsertFollowers }
-export type { Likes, InsertLikes }
+
+export type { Upvote, InsertUpvote }
+export type { Downvote, InsertDownvote }
+
 export type { Messages, InsertMessages }
 export type { Notifications, InsertNotifications }
 export type { Shares, InsertShares }

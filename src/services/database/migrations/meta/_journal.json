@@ -8,6 +8,13 @@
       "when": 1745428236692,
       "tag": "0000_right_skrulls",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1745431956833,
+      "tag": "0001_giant_yellow_claw",
+      "breakpoints": true
     }
   ]
 }
