@@ -7,6 +7,6 @@ import { authHandler } from '~/middlewares'
 const router = Router()
 
 router.get('/:username', controller.getUserInfo)
-router.get('/getData/:userId', controller.getUserData)
+router.get('/getData/:username', controller.getUserData)
 
 export default router
