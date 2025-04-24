@@ -1,4 +1,4 @@
-import { JoiXss } from '~/lib/utils'
+import Joi from 'joi'
 
 export interface NewPostSchema {
 	slug: string
@@ -7,9 +7,9 @@ export interface NewPostSchema {
 	userId: string
 }
 
-export const newPostSchema = JoiXss.object({
-	slug: JoiXss.string().required().xss(),
-	title: JoiXss.string().required().xss(),
-	content: JoiXss.string().required().xss(),
-	userId: JoiXss.string().required(),
+export const newPostSchema = Joi.object({
+	slug: Joi.string().required(),
+	title: Joi.string().required(),
+	content: Joi.string().required(),
+	userId: Joi.string().required(),
 })
