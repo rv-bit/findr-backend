@@ -1,50 +1,91 @@
 import type { Request, Response } from 'express'
 import { and, eq } from 'drizzle-orm'
+import { fromNodeHeaders } from 'better-auth/node'
 
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
-import { handler } from '~/lib/index'
+import { auth, handler } from '~/lib/index'
 import logger from '~/lib/logger'
 
 import type { NewPostSchema } from '~/routes/post/schema'
 import type { PostResponse } from '~/lib/types/shared'
 
 export const getAllPosts = handler(async (req: Request, res: Response) => {
-	// const limit = 5
-	// const offset = (Number(page) - 1) * limit
-	// let arrayPosts = [] as Partial<PostResponse>[]
-	// const posts = await db
-	// 	.select()
-	// 	.from(schema.posts)
-	// 	.where(eq(schema.posts.userId, userIdString))
-	// 	.limit(limit + 1)
-	// 	.offset(offset)
-	// if (posts.length > 0) {
-	// 	arrayPosts = await Promise.all(
-	// 		posts.map(async (post: PostResponse) => {
-	// 			const newPost = { ...post } as Partial<PostResponse>
-	// 			delete newPost.userId
-	// 			const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
-	// 			const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
-	// 			const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
-	// 			const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
-	// 			const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
-	// 			const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
-	// 			newPost.likesCount = likes
-	// 			newPost.commentsCount = comments.length
-	// 			newPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
-	// 			newPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
-	// 			return newPost
-	// 		})
-	// 	)
-	// }
-	// const hasNextPage = posts.length > limit
-	// const paginatedPosts = hasNextPage ? arrayPosts.slice(0, limit) : arrayPosts
-	// res.status(200).json({
-	// 	data: paginatedPosts,
-	// 	nextCursor: hasNextPage ? Number(page) + 1 : undefined,
-	// })
+	const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })
+
+	const { page } = req.query
+
+	const limit = 15
+	const offset = (Number(page) - 1) * limit
+
+	let arrayPosts = [] as Partial<
+		PostResponse & {
+			username: string | null
+			avatar: string | null
+		}
+	>[]
+	const posts = await db
+		.select()
+		.from(schema.posts)
+		.limit(limit + 1)
+		.offset(offset)
+
+	if (posts.length > 0) {
+		arrayPosts = await Promise.all(
+			posts.map(async (post: PostResponse) => {
+				const newPost = { ...post } as Partial<
+					PostResponse & {
+						user: {
+							username: string | null
+							image: string | null
+						}
+					}
+				>
+				delete newPost.userId
+
+				const user = await db
+					.select()
+					.from(schema.user)
+					.where(eq(schema.user.id, post.userId))
+					.limit(1)
+					.then((user) => user[0])
+
+				const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
+				const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
+
+				const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
+				const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
+
+				const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+				const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
+
+				newPost.likesCount = likes
+				newPost.commentsCount = comments.length
+
+				if (session && session.user) {
+					const userIdString = session.user.id
+
+					newPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
+					newPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
+				}
+
+				newPost.user = {
+					username: user.displayUsername,
+					image: user.image,
+				}
+				return newPost
+			})
+		)
+	}
+
+	const hasNextPage = posts.length > limit
+	const paginatedPosts = hasNextPage ? arrayPosts.slice(0, limit) : arrayPosts
+
+	res.status(200).json({
+		data: paginatedPosts,
+		nextCursor: hasNextPage ? Number(page) + 1 : undefined,
+	})
 })
 
 export const testGetAllPosts = handler(async (req: Request, res: Response) => {
@@ -114,14 +155,15 @@ export const newTestPost = handler(async (req: Request, res: Response) => {
 		.values({
 			id: crypto.randomUUID(),
 			slug: newSlug,
-			title,
-			content,
-			userId,
+			title: title,
+			content: content,
+			userId: userId,
 
 			createdAt: new Date(), // Use the current date as the createdAt value
 			updatedAt: new Date(), // Use the current date as the updatedAt value
 		})
 		.catch((error) => {
+			console.error('Error inserting post', { error })
 			logger.error('Error inserting post', { error })
 
 			res.status(401).json({
@@ -195,8 +237,8 @@ export const upvotePost = handler(async (req: Request, res: Response) => {
 		.insert(schema.upvotes)
 		.values({
 			id: crypto.randomUUID(),
-			postId,
-			userId,
+			postId: postId,
+			userId: userId,
 			createdAt: new Date(), // Use the current date as the createdAt value
 		})
 		.catch((error) => {
@@ -273,8 +315,8 @@ export const downvotePost = handler(async (req: Request, res: Response) => {
 		.insert(schema.downvotes)
 		.values({
 			id: crypto.randomUUID(),
-			postId,
-			userId,
+			postId: postId,
+			userId: userId,
 			createdAt: new Date(), // Use the current date as the createdAt value
 		})
 		.catch((error) => {
