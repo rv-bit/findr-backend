@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
@@ -10,7 +10,15 @@ import type { CommentResponse, PostResponse } from '~/lib/types/shared'
 export const getUserInfo = handler(async (req: Request, res: Response) => {
 	const { username } = req.params
 
-	const users = await db.select().from(schema.user).where(eq(schema.user.username, username)).limit(1)
+	const preparedUsers = await db
+		.select()
+		.from(schema.user)
+		.where(eq(schema.user.username, sql.placeholder('username')))
+		.limit(1)
+		.prepare()
+
+	const users = await preparedUsers.execute({ username: username })
+
 	if (!users || users.length === 0) {
 		res.status(200).json({
 			data: null,
