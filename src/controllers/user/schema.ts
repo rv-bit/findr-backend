@@ -6,6 +6,7 @@ export type CommentResponse = {
 	createdAt: Date
 	updatedAt: Date
 
+	username?: string | null
 	postTitle?: string | null
 }
 
@@ -18,6 +19,8 @@ export type PostResponse = {
 	createdAt: Date
 	updatedAt: Date
 
+	// Additional fields not from the database schema
+	username?: string
 	likesCount?: number
 	commentsCount?: number
 
