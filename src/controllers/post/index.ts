@@ -4,15 +4,47 @@ import { and, eq } from 'drizzle-orm'
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
-import { handler } from '~/utils/index'
-import logger from '~/utils/logger'
+import { handler } from '~/lib/index'
+import logger from '~/lib/logger'
 
 import type { NewPostSchema } from '~/routes/post/schema'
+import type { PostResponse } from '~/lib/types/shared'
 
 export const getAllPosts = handler(async (req: Request, res: Response) => {
-	res.status(200).json({
-		message: 'Hello World!',
-	})
+	// const limit = 5
+	// const offset = (Number(page) - 1) * limit
+	// let arrayPosts = [] as Partial<PostResponse>[]
+	// const posts = await db
+	// 	.select()
+	// 	.from(schema.posts)
+	// 	.where(eq(schema.posts.userId, userIdString))
+	// 	.limit(limit + 1)
+	// 	.offset(offset)
+	// if (posts.length > 0) {
+	// 	arrayPosts = await Promise.all(
+	// 		posts.map(async (post: PostResponse) => {
+	// 			const newPost = { ...post } as Partial<PostResponse>
+	// 			delete newPost.userId
+	// 			const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
+	// 			const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
+	// 			const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
+	// 			const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
+	// 			const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+	// 			const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
+	// 			newPost.likesCount = likes
+	// 			newPost.commentsCount = comments.length
+	// 			newPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
+	// 			newPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
+	// 			return newPost
+	// 		})
+	// 	)
+	// }
+	// const hasNextPage = posts.length > limit
+	// const paginatedPosts = hasNextPage ? arrayPosts.slice(0, limit) : arrayPosts
+	// res.status(200).json({
+	// 	data: paginatedPosts,
+	// 	nextCursor: hasNextPage ? Number(page) + 1 : undefined,
+	// })
 })
 
 export const testGetAllPosts = handler(async (req: Request, res: Response) => {

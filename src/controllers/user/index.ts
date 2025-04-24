@@ -4,8 +4,8 @@ import { eq } from 'drizzle-orm'
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
-import { handler } from '~/utils/index'
-import type { CommentResponse, PostResponse } from './schema'
+import { handler } from '~/lib/index'
+import type { CommentResponse, PostResponse } from '~/lib/types/shared'
 
 export const getUserInfo = handler(async (req: Request, res: Response) => {
 	const { username } = req.params
@@ -86,9 +86,6 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 						const newComment = { ...comment } as Partial<CommentResponse>
 						delete newComment.userId // removing it from the response
 
-						const userCommented = await db.select().from(schema.user).where(eq(schema.user.id, comment.userId)).limit(1)
-						newComment.username = userCommented[0].username
-
 						if (!comment.postId) {
 							return newComment
 						}
@@ -123,8 +120,6 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 
 						newPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
 						newPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
-
-						newPost.username = username
 						return newPost
 					})
 				)
@@ -173,8 +168,6 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 
 						newPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
 						newPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
-
-						newPost.username = username
 						return newPost
 					})
 				)
@@ -207,12 +200,10 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 						const newComment = { ...comment } as Partial<CommentResponse>
 						delete newComment.userId // removing it from the response
 
-						const userCommented = await db.select().from(schema.user).where(eq(schema.user.id, comment.userId)).limit(1)
-						newComment.username = userCommented[0].username
-
 						if (!comment.postId) {
 							return newComment
 						}
+
 						const post = await db.select().from(schema.posts).where(eq(schema.posts.id, comment.postId)).limit(1)
 						if (post) {
 							newComment.postTitle = post[0].title

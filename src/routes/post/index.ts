@@ -1,5 +1,5 @@
 import { Router, type RequestHandler } from 'express'
-import { validateRequest } from '~/utils/index'
+import { validateRequest } from '~/lib/index'
 
 import * as controller from '~/controllers/post/index'
 import { authHandler } from '~/middlewares'
