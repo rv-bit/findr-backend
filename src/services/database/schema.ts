@@ -126,7 +126,7 @@ export const upvotes = mysqlTable('upvotes', {
 	id: varchar('id', { length: 36 }).primaryKey(),
 	postId: varchar('postId', { length: 36 })
 		.notNull()
-		.references(() => posts.id),
+		.references(() => posts.id, { onDelete: 'cascade' }),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
 		.references(() => user.id),
@@ -137,7 +137,7 @@ export const downvotes = mysqlTable('downvotes', {
 	id: varchar('id', { length: 36 }).primaryKey(),
 	postId: varchar('postId', { length: 36 })
 		.notNull()
-		.references(() => posts.id),
+		.references(() => posts.id, { onDelete: 'cascade' }),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
 		.references(() => user.id),
@@ -164,8 +164,8 @@ export const notifications = mysqlTable('notifications', {
 		.notNull()
 		.references(() => user.id),
 	type: varchar('type', { length: 50 }).notNull(), // E.g., 'like', 'comment', 'follow'
-	relatedUserId: varchar('relatedUserId', { length: 36 }), // If the notification is related to a user
-	postId: varchar('postId', { length: 36 }).references(() => posts.id), // If the notification is related to a post
+	relatedUserId: varchar('relatedUserId', { length: 36 }).references(() => user.id), // If the notification is related to another user
+	postId: varchar('postId', { length: 36 }).references(() => posts.id, { onDelete: 'cascade' }), // If the notification is related to a post
 	createdAt: timestamp('createdAt').notNull(),
 	isRead: boolean('isRead').default(false),
 })
@@ -174,7 +174,7 @@ export const shares = mysqlTable('shares', {
 	id: varchar('id', { length: 36 }).primaryKey(),
 	postId: varchar('postId', { length: 36 })
 		.notNull()
-		.references(() => posts.id),
+		.references(() => posts.id, { onDelete: 'cascade' }),
 	userId: varchar('userId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
