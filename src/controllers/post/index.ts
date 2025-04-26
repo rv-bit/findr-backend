@@ -61,9 +61,9 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 				const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
 
 				const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
-				const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
+				const downvotesCount = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
 
-				const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+				const likes = (upvotesCount || 0) - -(downvotesCount || 0) // Calculate the likes count
 				const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
 
 				newPost.likesCount = likes
@@ -133,15 +133,13 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 	const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
 
 	const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
-	const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
+	const downvotesCount = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
 
-	const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+	const likes = (upvotesCount || 0) - (downvotesCount || 0) // Calculate the likes count
 	const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
 
 	copyPost.likesCount = likes
 	copyPost.commentsCount = comments.length
-
-	console.log('session.user', session)
 
 	if (session && session.user) {
 		const userIdString = session.user.id
