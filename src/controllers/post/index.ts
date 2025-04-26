@@ -175,7 +175,7 @@ export const insertPost = handler(async (req: Request, res: Response) => {
 	await db
 		.insert(schema.posts)
 		.values({
-			id: nanoid(16),
+			id: nanoid(17),
 			slug: slug,
 			title: title,
 			content: content,
@@ -258,7 +258,7 @@ export const upvotePost = handler(async (req: Request, res: Response) => {
 	await db
 		.insert(schema.upvotes)
 		.values({
-			id: crypto.randomUUID(),
+			id: nanoid(17),
 			postId: postId,
 			userId: userId,
 			createdAt: new Date(), // Use the current date as the createdAt value
@@ -336,7 +336,7 @@ export const downvotePost = handler(async (req: Request, res: Response) => {
 	await db
 		.insert(schema.downvotes)
 		.values({
-			id: crypto.randomUUID(),
+			id: nanoid(17),
 			postId: postId,
 			userId: userId,
 			createdAt: new Date(), // Use the current date as the createdAt value
