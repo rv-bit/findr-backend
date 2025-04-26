@@ -71,7 +71,7 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 				}
 
 				newPost.user = {
-					username: user.displayUsername,
+					username: user.username,
 					image: user.image,
 				}
 				return newPost
@@ -85,6 +85,77 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 	res.status(200).json({
 		data: paginatedPosts,
 		nextCursor: hasNextPage ? Number(page) + 1 : undefined,
+	})
+})
+
+export const getPostById = handler(async (req: Request, res: Response) => {
+	const { postSlug } = req.params
+
+	console.log('postSlug', postSlug)
+
+	const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })
+
+	const post = await db
+		.select()
+		.from(schema.posts)
+		.where(eq(schema.posts.slug, postSlug))
+		.limit(1)
+		.then((post) => post[0])
+
+	if (!post) {
+		res.status(401).json({
+			message: 'Failed to get post',
+		})
+
+		logger.error('Failed to get post', { post })
+		return
+	}
+
+	const copyPost = { ...post } as Partial<
+		PostResponse & {
+			user: {
+				username: string | null
+				image: string | null
+			}
+		}
+	>
+
+	const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
+	const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
+
+	const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
+	const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
+
+	const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+	const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
+
+	copyPost.likesCount = likes
+	copyPost.commentsCount = comments.length
+
+	if (session && session.user) {
+		const userIdString = session.user.id
+
+		copyPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
+		copyPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
+	}
+
+	const user = await db
+		.select()
+		.from(schema.user)
+		.where(eq(schema.user.id, post.userId))
+		.limit(1)
+		.then((user) => user[0])
+
+	delete copyPost.userId
+	delete copyPost.id
+
+	copyPost.user = {
+		username: user.username,
+		image: user.image,
+	}
+
+	res.status(200).json({
+		data: copyPost,
 	})
 })
 

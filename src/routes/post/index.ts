@@ -9,6 +9,8 @@ import { newPostSchema } from './schema'
 const router = Router()
 
 router.get('/', controller.getAllPosts)
+router.get('/:postSlug', controller.getPostById)
+
 router.post('/insert', authHandler() as RequestHandler, validateRequest(newPostSchema) as RequestHandler, controller.newTestPost)
 router.post('/upvote/:postId', authHandler() as RequestHandler, controller.upvotePost)
 router.post('/downvote/:postId', authHandler() as RequestHandler, controller.downvotePost)
