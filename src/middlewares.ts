@@ -26,8 +26,6 @@ export const authHandler = () => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })
 
-		console.log('autherised session', session)
-
 		if (!session || !session.user) {
 			return res.status(401).json({
 				error: 'Unauthorized',
