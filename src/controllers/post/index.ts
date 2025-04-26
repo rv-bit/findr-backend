@@ -63,7 +63,7 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 				const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
 				const downvotesCount = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
 
-				const likes = (upvotesCount || 0) - -(downvotesCount || 0) // Calculate the likes count
+				const likes = (upvotesCount || 0) - (downvotesCount || 0) // Calculate the likes count
 				const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
 
 				newPost.likesCount = likes
@@ -112,11 +112,11 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 		.then((post) => post[0])
 
 	if (!post) {
-		res.status(401).json({
-			message: 'Failed to get post',
-		})
-
 		logger.error('Failed to get post', { post })
+
+		res.status(200).json({
+			data: [],
+		})
 		return
 	}
 
@@ -356,17 +356,28 @@ export const downvotePost = handler(async (req: Request, res: Response) => {
 
 export const deletePost = handler(async (req: Request, res: Response) => {
 	const { postId } = req.params
+	const { userId } = req.body as { userId: string }
 
+	// Check if the post exists and belongs to the user
+	await db
+		.select()
+		.from(schema.posts)
+		.where(and(eq(schema.posts.id, postId), eq(schema.posts.userId, userId)))
+		.catch((error) => {
+			logger.error('Error checking post', { error })
+
+			res.status(401).json({})
+			return null
+		})
+
+	// Delete the post if it exists and belongs to the user
 	await db
 		.delete(schema.posts)
-		.where(eq(schema.posts.id, postId))
+		.where(and(eq(schema.posts.id, postId), eq(schema.posts.userId, userId)))
 		.catch((error) => {
 			logger.error('Error deleting post', { error })
 
-			res.status(401).json({
-				data: 'Failed to delete post',
-			})
-
+			res.status(401).json({})
 			return null
 		})
 

@@ -15,6 +15,8 @@ router.post('/insert', authHandler() as RequestHandler, validateRequest(newPostS
 router.post('/upvote/:postId', authHandler() as RequestHandler, controller.upvotePost)
 router.post('/downvote/:postId', authHandler() as RequestHandler, controller.downvotePost)
 
+router.delete('/:postId', authHandler() as RequestHandler, controller.deletePost)
+
 // router.get('/read', controller.testGetAllPosts)
 // router.get('/write', controller.testWritePosts)
 
