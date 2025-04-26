@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express'
 import { and, eq } from 'drizzle-orm'
 import { fromNodeHeaders } from 'better-auth/node'
+import { nanoid } from 'nanoid'
 
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
@@ -12,7 +13,12 @@ import type { NewPostSchema } from '~/routes/post/schema'
 import type { PostResponse } from '~/lib/types/shared'
 
 export const getAllPosts = handler(async (req: Request, res: Response) => {
-	const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+		query: {
+			disableCookieCache: true,
+		},
+	})
 
 	const { page } = req.query
 
@@ -89,16 +95,19 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 })
 
 export const getPostById = handler(async (req: Request, res: Response) => {
-	const { postSlug } = req.params
+	const { postId } = req.params
 
-	console.log('postSlug', postSlug)
-
-	const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+		query: {
+			disableCookieCache: true,
+		},
+	})
 
 	const post = await db
 		.select()
 		.from(schema.posts)
-		.where(eq(schema.posts.slug, postSlug))
+		.where(eq(schema.posts.id, postId))
 		.limit(1)
 		.then((post) => post[0])
 
@@ -132,6 +141,8 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 	copyPost.likesCount = likes
 	copyPost.commentsCount = comments.length
 
+	console.log('session.user', session)
+
 	if (session && session.user) {
 		const userIdString = session.user.id
 
@@ -147,7 +158,6 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 		.then((user) => user[0])
 
 	delete copyPost.userId
-	delete copyPost.id
 
 	copyPost.user = {
 		username: user.username,
@@ -159,73 +169,14 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 	})
 })
 
-export const testGetAllPosts = handler(async (req: Request, res: Response) => {
-	const posts = await db.select().from(schema.posts).limit(500)
-
-	if (!posts) {
-		res.status(401).json({
-			message: 'Failed to get posts',
-		})
-
-		logger.error('Failed to get posts', { posts })
-		return
-	}
-
-	const allPosts = posts.map((post) => {
-		return {
-			id: post.id,
-			slug: post.slug,
-			title: post.title,
-			content: post.content,
-			userId: post.userId,
-			createdAt: post.createdAt,
-			updatedAt: post.updatedAt,
-		}
-	})
-
-	// return all posts
-	res.status(200).json(allPosts)
-})
-
-export const testWritePosts = handler(async (req: Request, res: Response) => {
-	const length = await db.$count(schema.posts)
-	const posts: schema.InsertPosts[] = []
-
-	for (let i = length + 1; i < length + 1000; i++) {
-		posts.push({
-			id: crypto.randomUUID(),
-			slug: `test-post-${i}-${Date.now()}`,
-			title: 'Test Post ' + i,
-			content: 'This is a test post ' + i,
-			userId: 'o3P6NXURD4LwOiwEF8xryx4S9bXj4Jin',
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		})
-	}
-
-	await db.transaction(async (tx) => {
-		await tx.insert(schema.posts).values(posts)
-	})
-
-	res.status(200).json({
-		message: 'Success',
-	})
-})
-
-export const newTestPost = handler(async (req: Request, res: Response) => {
+export const insertPost = handler(async (req: Request, res: Response) => {
 	const { slug, title, content, userId } = req.body as NewPostSchema
-	let newSlug = slug
-
-	const existingPost = await db.select().from(schema.posts).where(eq(schema.posts.slug, slug)).limit(1)
-	if (existingPost.length > 0) {
-		newSlug = `${slug}-${existingPost.length + 1}`
-	}
 
 	await db
 		.insert(schema.posts)
 		.values({
-			id: crypto.randomUUID(),
-			slug: newSlug,
+			id: nanoid(16),
+			slug: slug,
 			title: title,
 			content: content,
 			userId: userId,
@@ -395,6 +346,27 @@ export const downvotePost = handler(async (req: Request, res: Response) => {
 
 			res.status(401).json({
 				data: 'Failed to downvote post',
+			})
+
+			return null
+		})
+
+	res.status(200).json({
+		data: 'Success',
+	})
+})
+
+export const deletePost = handler(async (req: Request, res: Response) => {
+	const { postId } = req.params
+
+	await db
+		.delete(schema.posts)
+		.where(eq(schema.posts.id, postId))
+		.catch((error) => {
+			logger.error('Error deleting post', { error })
+
+			res.status(401).json({
+				data: 'Failed to delete post',
 			})
 
 			return null
