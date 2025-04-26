@@ -25,19 +25,19 @@ CREATE TABLE `comments` (
 	CONSTRAINT `comments_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `downvotes` (
+	`id` varchar(36) NOT NULL,
+	`postId` varchar(36) NOT NULL,
+	`user_id` varchar(36) NOT NULL,
+	`createdAt` timestamp NOT NULL,
+	CONSTRAINT `downvotes_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `followers` (
 	`followerId` varchar(36) NOT NULL,
 	`followingId` varchar(36) NOT NULL,
 	`followedAt` timestamp NOT NULL,
 	CONSTRAINT `follower_following_idx` UNIQUE(`followerId`,`followingId`)
-);
---> statement-breakpoint
-CREATE TABLE `likes` (
-	`id` varchar(36) NOT NULL,
-	`postId` varchar(36) NOT NULL,
-	`user_id` varchar(36) NOT NULL,
-	`createdAt` timestamp NOT NULL,
-	CONSTRAINT `likes_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `messages` (
@@ -64,14 +64,13 @@ CREATE TABLE `notifications` (
 --> statement-breakpoint
 CREATE TABLE `posts` (
 	`id` varchar(36) NOT NULL,
-	`slug` varchar(256),
-	`title` varchar(256),
-	`content` longtext,
+	`slug` varchar(256) NOT NULL,
+	`title` varchar(256) NOT NULL,
+	`content` longtext NOT NULL,
 	`user_id` varchar(36) NOT NULL,
 	`created_at` timestamp NOT NULL,
 	`updated_at` timestamp NOT NULL,
-	CONSTRAINT `posts_id` PRIMARY KEY(`id`),
-	CONSTRAINT `slug_idx` UNIQUE(`slug`)
+	CONSTRAINT `posts_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `session` (
@@ -102,6 +101,14 @@ CREATE TABLE `two_factor` (
 	`backup_codes` text NOT NULL,
 	`user_id` varchar(36) NOT NULL,
 	CONSTRAINT `two_factor_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `upvotes` (
+	`id` varchar(36) NOT NULL,
+	`postId` varchar(36) NOT NULL,
+	`user_id` varchar(36) NOT NULL,
+	`createdAt` timestamp NOT NULL,
+	CONSTRAINT `upvotes_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `user` (
@@ -138,10 +145,10 @@ CREATE TABLE `verification` (
 ALTER TABLE `account` ADD CONSTRAINT `account_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `comments` ADD CONSTRAINT `comments_post_id_posts_id_fk` FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `comments` ADD CONSTRAINT `comments_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `downvotes` ADD CONSTRAINT `downvotes_postId_posts_id_fk` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `downvotes` ADD CONSTRAINT `downvotes_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `followers` ADD CONSTRAINT `followers_followerId_user_id_fk` FOREIGN KEY (`followerId`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `followers` ADD CONSTRAINT `followers_followingId_user_id_fk` FOREIGN KEY (`followingId`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `likes` ADD CONSTRAINT `likes_postId_posts_id_fk` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `likes` ADD CONSTRAINT `likes_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `messages` ADD CONSTRAINT `messages_senderId_user_id_fk` FOREIGN KEY (`senderId`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `messages` ADD CONSTRAINT `messages_receiverId_user_id_fk` FOREIGN KEY (`receiverId`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `notifications` ADD CONSTRAINT `notifications_userId_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -151,4 +158,5 @@ ALTER TABLE `session` ADD CONSTRAINT `session_user_id_user_id_fk` FOREIGN KEY (`
 ALTER TABLE `shares` ADD CONSTRAINT `shares_postId_posts_id_fk` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `shares` ADD CONSTRAINT `shares_userId_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `two_factor` ADD CONSTRAINT `two_factor_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX `title_idx` ON `posts` (`title`);
+ALTER TABLE `upvotes` ADD CONSTRAINT `upvotes_postId_posts_id_fk` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `upvotes` ADD CONSTRAINT `upvotes_user_id_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;

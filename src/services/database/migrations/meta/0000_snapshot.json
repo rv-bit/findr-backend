@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "8707f34f-5007-4fbd-906e-ea7e27209fc5",
+  "id": "b1e475fa-ee64-45ec-bc99-4517e09769d3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -212,6 +212,78 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
+    "downvotes": {
+      "name": "downvotes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "postId": {
+          "name": "postId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "downvotes_postId_posts_id_fk": {
+          "name": "downvotes_postId_posts_id_fk",
+          "tableFrom": "downvotes",
+          "tableTo": "posts",
+          "columnsFrom": [
+            "postId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "downvotes_user_id_user_id_fk": {
+          "name": "downvotes_user_id_user_id_fk",
+          "tableFrom": "downvotes",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "downvotes_id": {
+          "name": "downvotes_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "followers": {
       "name": "followers",
       "columns": {
@@ -276,78 +348,6 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "likes": {
-      "name": "likes",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "varchar(36)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "postId": {
-          "name": "postId",
-          "type": "varchar(36)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "varchar(36)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "likes_postId_posts_id_fk": {
-          "name": "likes_postId_posts_id_fk",
-          "tableFrom": "likes",
-          "tableTo": "posts",
-          "columnsFrom": [
-            "postId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "likes_user_id_user_id_fk": {
-          "name": "likes_user_id_user_id_fk",
-          "tableFrom": "likes",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "likes_id": {
-          "name": "likes_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -553,21 +553,21 @@
           "name": "slug",
           "type": "varchar(256)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "title": {
           "name": "title",
           "type": "varchar(256)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "content": {
           "name": "content",
           "type": "longtext",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "user_id": {
@@ -592,22 +592,7 @@
           "autoincrement": false
         }
       },
-      "indexes": {
-        "slug_idx": {
-          "name": "slug_idx",
-          "columns": [
-            "slug"
-          ],
-          "isUnique": true
-        },
-        "title_idx": {
-          "name": "title_idx",
-          "columns": [
-            "title"
-          ],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "posts_user_id_user_id_fk": {
           "name": "posts_user_id_user_id_fk",
@@ -858,6 +843,78 @@
       "compositePrimaryKeys": {
         "two_factor_id": {
           "name": "two_factor_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "upvotes": {
+      "name": "upvotes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "postId": {
+          "name": "postId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "upvotes_postId_posts_id_fk": {
+          "name": "upvotes_postId_posts_id_fk",
+          "tableFrom": "upvotes",
+          "tableTo": "posts",
+          "columnsFrom": [
+            "postId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "upvotes_user_id_user_id_fk": {
+          "name": "upvotes_user_id_user_id_fk",
+          "tableFrom": "upvotes",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "upvotes_id": {
+          "name": "upvotes_id",
           "columns": [
             "id"
           ]

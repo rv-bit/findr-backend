@@ -79,22 +79,18 @@ export const twoFactor = mysqlTable('two_factor', {
 		.references(() => user.id, { onDelete: 'cascade' }),
 })
 
-export const posts = mysqlTable(
-	'posts',
-	{
-		id: varchar('id', { length: 36 }).primaryKey(),
-		slug: varchar({ length: 256 }).$default(() => generateUniqueString(16)),
-		title: varchar({ length: 256 }),
-		content: longtext(),
-		userId: varchar('user_id', { length: 36 })
-			.notNull()
-			.references(() => user.id),
+export const posts = mysqlTable('posts', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	slug: varchar({ length: 256 }).notNull(),
+	title: varchar({ length: 256 }).notNull(),
+	content: longtext().notNull(),
+	userId: varchar('user_id', { length: 36 })
+		.notNull()
+		.references(() => user.id),
 
-		createdAt: timestamp('created_at').notNull(),
-		updatedAt: timestamp('updated_at').notNull(),
-	},
-	(table) => [uniqueIndex('slug_idx').on(table.slug), index('title_idx').on(table.title)]
-)
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at').notNull(),
+})
 
 export const comments = mysqlTable('comments', {
 	id: varchar('id', { length: 36 }).primaryKey(),
