@@ -38,8 +38,8 @@ export const getUserInfo = handler(async (req: Request, res: Response) => {
 })
 
 export const getUserData = handler(async (req: Request, res: Response) => {
-	const { type, page } = req.query
 	const { username } = req.params
+	const { type, page } = req.query
 
 	if (!username) {
 		res.status(400).json({
