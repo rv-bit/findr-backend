@@ -125,7 +125,9 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 		PostResponse & {
 			user: {
 				username: string | null
+				about_description: string | null
 				image: string | null
+				createdAt: Date | null
 			}
 		}
 	>
@@ -160,7 +162,9 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 
 	copyPost.user = {
 		username: user.username,
+		about_description: user.about_description,
 		image: user.image,
+		createdAt: user.createdAt,
 	}
 
 	res.status(200).json({
