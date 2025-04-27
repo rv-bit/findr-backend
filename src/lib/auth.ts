@@ -208,7 +208,7 @@ export const auth = betterAuth({
 		cookieCache: {
 			// Cache the session cookie for 1 minute
 			enabled: true,
-			maxAge: 1 * 60, // Cache duration in seconds
+			maxAge: 30, // Cache duration in seconds
 		},
 	},
 
@@ -305,9 +305,9 @@ export const auth = betterAuth({
 
 			switch (ctx.query?.error) {
 				case 'account_already_linked_to_different_user':
-					throw ctx.redirect(`${url}/error/?error=account_already_linked_to_different_user`)
+					throw ctx.redirect(`${url}/?error=Account already linked to different user`)
 				case "email_doesn't_match":
-					throw ctx.redirect(`${url}/error/?error=email_doesnt_match`)
+					throw ctx.redirect(`${url}/?error=Email doesn't match`)
 				default:
 					break
 			}
