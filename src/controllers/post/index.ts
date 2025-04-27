@@ -115,7 +115,8 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 		logger.error('Failed to get post', { post })
 
 		res.status(200).json({
-			data: [],
+			data: null,
+			message: 'Post not found',
 		})
 		return
 	}
@@ -186,7 +187,7 @@ export const insertPost = handler(async (req: Request, res: Response) => {
 			console.error('Error inserting post', { error })
 			logger.error('Error inserting post', { error })
 
-			res.status(401).json({
+			res.status(500).json({
 				data: 'Failed to create post',
 			})
 
@@ -223,7 +224,7 @@ export const upvotePost = handler(async (req: Request, res: Response) => {
 			.catch((error) => {
 				logger.error('Error removing downvote', { error })
 
-				res.status(401).json({
+				res.status(500).json({
 					data: 'Failed to unlike post',
 				})
 
@@ -240,7 +241,7 @@ export const upvotePost = handler(async (req: Request, res: Response) => {
 			.catch((error) => {
 				logger.error('Error removing upvote', { error })
 
-				res.status(401).json({
+				res.status(500).json({
 					data: 'Failed to unlike post',
 				})
 
@@ -264,7 +265,7 @@ export const upvotePost = handler(async (req: Request, res: Response) => {
 		.catch((error) => {
 			logger.error('Error inserting upvote', { error })
 
-			res.status(401).json({
+			res.status(500).json({
 				data: 'Failed to upvote post',
 			})
 
@@ -301,7 +302,7 @@ export const downvotePost = handler(async (req: Request, res: Response) => {
 			.catch((error) => {
 				logger.error('Error removing upvote', { error })
 
-				res.status(401).json({
+				res.status(500).json({
 					data: 'Failed to unlike post',
 				})
 
@@ -318,7 +319,7 @@ export const downvotePost = handler(async (req: Request, res: Response) => {
 			.catch((error) => {
 				logger.error('Error removing downvote', { error })
 
-				res.status(401).json({
+				res.status(500).json({
 					data: 'Failed to unlike post',
 				})
 
@@ -342,10 +343,7 @@ export const downvotePost = handler(async (req: Request, res: Response) => {
 		.catch((error) => {
 			logger.error('Error inserting downvote', { error })
 
-			res.status(401).json({
-				data: 'Failed to downvote post',
-			})
-
+			res.status(500).json({})
 			return null
 		})
 
@@ -358,18 +356,6 @@ export const deletePost = handler(async (req: Request, res: Response) => {
 	const { postId } = req.params
 	const { userId } = req.body as { userId: string }
 
-	// Check if the post exists and belongs to the user
-	await db
-		.select()
-		.from(schema.posts)
-		.where(and(eq(schema.posts.id, postId), eq(schema.posts.userId, userId)))
-		.catch((error) => {
-			logger.error('Error checking post', { error })
-
-			res.status(401).json({})
-			return null
-		})
-
 	// Delete the post if it exists and belongs to the user
 	await db
 		.delete(schema.posts)
@@ -377,7 +363,7 @@ export const deletePost = handler(async (req: Request, res: Response) => {
 		.catch((error) => {
 			logger.error('Error deleting post', { error })
 
-			res.status(401).json({})
+			res.status(500).json({})
 			return null
 		})
 
