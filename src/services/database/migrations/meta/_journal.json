@@ -15,6 +15,13 @@
       "when": 1745697032124,
       "tag": "0001_nice_doctor_doom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1745856041199,
+      "tag": "0002_zippy_sue_storm",
+      "breakpoints": true
     }
   ]
 }

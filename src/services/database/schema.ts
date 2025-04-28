@@ -97,6 +97,7 @@ export const comments = mysqlTable('comments', {
 	postId: varchar('post_id', { length: 36 })
 		.notNull()
 		.references(() => posts.id),
+	parentId: varchar('parent_id', { length: 36 }), // self-referencing
 	text: varchar({ length: 256 }),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
@@ -194,6 +195,9 @@ type InsertVerification = InferInsertModel<typeof verification>
 type Posts = InferSelectModel<typeof posts>
 type InsertPosts = InferInsertModel<typeof posts>
 
+type Comments = InferSelectModel<typeof comments>
+type InsertComments = InferInsertModel<typeof comments>
+
 type Followers = InferSelectModel<typeof followers>
 type InsertFollowers = InferInsertModel<typeof followers>
 
@@ -215,8 +219,9 @@ type InsertShares = InferInsertModel<typeof shares>
 export type { User, Session, Account, Verification }
 export type { InsertUser, InsertSession, InsertAccount, InsertVerification }
 
-export type { Posts, InsertPosts }
 export type { Followers, InsertFollowers }
+export type { Posts, InsertPosts }
+export type { Comments, InsertComments }
 
 export type { Upvote, InsertUpvote }
 export type { Downvote, InsertDownvote }
