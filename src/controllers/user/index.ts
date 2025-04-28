@@ -5,6 +5,7 @@ import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
 import { handler } from '~/lib/index'
+
 import type { CommentResponse, PostResponse } from '~/lib/types/shared'
 
 export const getUserInfo = handler(async (req: Request, res: Response) => {
@@ -17,9 +18,9 @@ export const getUserInfo = handler(async (req: Request, res: Response) => {
 		.limit(1)
 		.prepare()
 
-	const users = await preparedUsers.execute({ username: username })
+	const user = await preparedUsers.execute({ username: username }).then((user) => user[0])
 
-	if (!users || users.length === 0) {
+	if (!user) {
 		res.status(200).json({
 			data: null,
 			message: 'User not found',
@@ -27,12 +28,19 @@ export const getUserInfo = handler(async (req: Request, res: Response) => {
 		return
 	}
 
-	const userInfo = users[0]
+	const commentsCount = await db.$count(schema.comments, eq(schema.comments.userId, user.id))
+	const postsCount = await db.$count(schema.posts, eq(schema.posts.userId, user.id))
+
 	res.status(200).json({
 		data: {
-			username: userInfo.username,
-			image: userInfo.image,
-			about_description: userInfo.about_description,
+			username: user.username,
+			image: user.image,
+			about_description: user.about_description,
+
+			postsCount: postsCount,
+			commentsCount: commentsCount,
+
+			createdAt: user.createdAt,
 		},
 	})
 })

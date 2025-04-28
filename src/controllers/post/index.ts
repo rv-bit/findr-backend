@@ -125,8 +125,12 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 		PostResponse & {
 			user: {
 				username: string | null
-				about_description: string | null
 				image: string | null
+				about_description: string | null
+
+				postsCount: number
+				commentsCount: number
+
 				createdAt: Date | null
 			}
 		}
@@ -158,12 +162,19 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 		.limit(1)
 		.then((user) => user[0])
 
+	const commentsCount = await db.$count(schema.comments, eq(schema.comments.userId, user.id))
+	const postsCount = await db.$count(schema.posts, eq(schema.posts.userId, user.id))
+
 	delete copyPost.userId
 
 	copyPost.user = {
 		username: user.username,
-		about_description: user.about_description,
 		image: user.image,
+		about_description: user.about_description,
+
+		postsCount: postsCount,
+		commentsCount: commentsCount,
+
 		createdAt: user.createdAt,
 	}
 
