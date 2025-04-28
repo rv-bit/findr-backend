@@ -214,6 +214,34 @@ export const insertPost = handler(async (req: Request, res: Response) => {
 	})
 })
 
+export const editPost = handler(async (req: Request, res: Response) => {
+	const { postId } = req.params
+	const { content, userId } = req.body as NewPostSchema
+
+	await db
+		.update(schema.posts)
+		.set({
+			content: content,
+			userId: userId,
+
+			updatedAt: new Date(), // Use the current date as the updatedAt value
+		})
+		.where(eq(schema.posts.id, postId))
+		.catch((error) => {
+			logger.error('Error updating post', { error })
+
+			res.status(500).json({
+				data: 'Failed to update post',
+			})
+
+			return null
+		})
+
+	res.status(200).json({
+		data: 'Success',
+	})
+})
+
 export const upvotePost = handler(async (req: Request, res: Response) => {
 	const { postId } = req.params
 	const { userId } = req.body as schema.InsertUpvote

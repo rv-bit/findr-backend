@@ -13,3 +13,8 @@ export const newPostSchema = Joi.object({
 	content: Joi.string().required(),
 	userId: Joi.string().required(),
 })
+
+export const editPostSchema = Joi.object({
+	content: Joi.string().required(),
+	userId: Joi.string().required(),
+})
