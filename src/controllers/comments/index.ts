@@ -1,10 +1,12 @@
 import type { Request, Response } from 'express'
 import { eq, and, isNull, desc, asc } from 'drizzle-orm'
+import { nanoid } from 'nanoid'
 
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
 import { handler } from '~/lib/index'
+import logger from '~/lib/logger'
 
 export const getCommentsByPost = handler(async (req: Request, res: Response) => {
 	const { postId } = req.params
@@ -53,5 +55,34 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 	res.status(200).json({
 		data: paginatedReplies,
 		nextCursor: hasNextPage ? Number(page) + 1 : undefined,
+	})
+})
+
+export const createComment = handler(async (req: Request, res: Response) => {
+	const { content, userId, postId } = req.body
+
+	await db
+		.insert(schema.comments)
+		.values({
+			id: nanoid(17),
+			text: content,
+			userId: userId,
+			postId: postId,
+
+			createdAt: new Date(), // Use the current date as the createdAt value
+			updatedAt: new Date(), // Use the current date as the updatedAt value
+		})
+		.catch((error) => {
+			logger.error('Error inserting comment:', error)
+
+			res.status(500).json({
+				data: 'Failed to insert comment',
+			})
+
+			return null
+		})
+
+	res.status(200).json({
+		data: 'Success',
 	})
 })

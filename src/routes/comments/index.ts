@@ -4,11 +4,13 @@ import { validateRequest } from '~/lib/index'
 import * as controller from '~/controllers/comments/index'
 import { authHandler } from '~/middlewares'
 
-import { getCommentsSchema } from './schema'
+import { getCommentsSchema, newCommentSchema } from './schema'
 
 const router = Router()
 
 router.get('/:postId', validateRequest(getCommentsSchema) as RequestHandler, controller.getCommentsByPost)
 router.get('/replies/:commentId', validateRequest(getCommentsSchema) as RequestHandler, controller.getRepliesByComment)
+
+router.post('/insert', authHandler() as RequestHandler, validateRequest(newCommentSchema) as RequestHandler, controller.createComment)
 
 export default router
