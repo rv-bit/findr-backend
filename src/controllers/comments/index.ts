@@ -76,7 +76,7 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 	const { commentId } = req.params
 	const { page } = req.query
 
-	const limit = 10
+	const limit = 5
 	const offset = (Number(page) - 1) * limit
 
 	let arrayReplies = [] as Partial<
