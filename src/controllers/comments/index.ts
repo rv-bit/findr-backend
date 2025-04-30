@@ -25,7 +25,7 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 	const comments = await db
 		.select()
 		.from(schema.comments)
-		.where(and(eq(schema.comments.postId, postId as string), isNull(schema.comments.parentId)))
+		.where(and(eq(schema.comments.postId, postId), isNull(schema.comments.parentId)))
 		.orderBy(asc(schema.comments.createdAt))
 		.limit(limit + 1)
 		.offset(offset)
@@ -64,7 +64,7 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 	}
 
 	const hasNextPage = comments.length > limit
-	const paginatedComments = hasNextPage ? comments.slice(0, limit) : arrayComments
+	const paginatedComments = hasNextPage ? arrayComments.slice(0, limit) : arrayComments
 
 	res.status(200).json({
 		data: paginatedComments,
@@ -128,7 +128,7 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 	}
 
 	const hasNextPage = replies.length > limit
-	const paginatedReplies = hasNextPage ? replies.slice(0, limit) : arrayReplies
+	const paginatedReplies = hasNextPage ? arrayReplies.slice(0, limit) : arrayReplies
 
 	res.status(200).json({
 		data: paginatedReplies,
