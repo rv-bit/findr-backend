@@ -1,9 +1,11 @@
 import 'dotenv/config'
 
-import { betterAuth, type User } from 'better-auth'
+import { betterAuth } from 'better-auth'
+import type { User } from 'better-auth/types'
 import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin, createAuthMiddleware, emailOTP, twoFactor, username } from 'better-auth/plugins'
+
 import { eq } from 'drizzle-orm'
 
 import config from '~/config'
@@ -11,7 +13,9 @@ import config from '~/config'
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
-import { sendEmail } from '~/services/email'
+import { sendEmail } from '~/services/email/service'
+import { reactResetPasswordEmail } from '~/services/email/templates'
+
 import { deleteUserAvatar, uploadUserAvatar } from '~/services/s3/avatar-client'
 
 const trustedOrigins = process.env.BETTER_TRUSTED_ORIGINS?.split(',').map((origin) => {
@@ -42,21 +46,24 @@ const createUniqueUsername = (username: string) => {
 }
 
 export const auth = betterAuth({
-	name: config.APP_NAME,
+	appName: config.APP_NAME,
 	database: drizzleAdapter(db, {
 		provider: 'mysql',
 		schema: schema,
 	}),
 
 	basePath: '/auth',
-	baseURL: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL : process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`,
+	baseURL:
+		process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL
+		: process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL
+		: `https://${process.env.BETTER_AUTH_URL}`,
 	trustedOrigins: trustedOrigins || ['http://localhost:3000'],
 
 	socialProviders: {
 		github: {
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-			// redirectURI: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL + '/auth/callback/github/' : (process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`) + '/auth/callback/github/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL + '/auth/callback/github/' : (process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`) + '/auth/callback/github/',
 			scope: ['user:email', 'read:user'],
 			mapProfileToUser(profile) {
 				return {
@@ -70,7 +77,7 @@ export const auth = betterAuth({
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-			// redirectURI: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL + '/auth/callback/google/' : (process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`) + '/auth/callback/google/',
+			redirectURI: process.env.NODE_ENV === 'development' ? process.env.BETTER_AUTH_URL + '/auth/callback/google/' : (process.env.BETTER_AUTH_URL?.startsWith('http') ? process.env.BETTER_AUTH_URL : `https://${process.env.BETTER_AUTH_URL}`) + '/auth/callback/google/',
 			scope: ['email', 'profile'],
 			mapProfileToUser(profile) {
 				return {
@@ -104,7 +111,13 @@ export const auth = betterAuth({
 			sendChangeEmailVerification: async ({ user, newEmail, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+				const newUrl =
+					(process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+					: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+					: `https://${process.env.BASE_URL}`) +
+					callbackURL! +
+					'?token=' +
+					token
 
 				await sendEmail({
 					to: user.email, // verification email must be sent to the current user email to approve the change
@@ -118,7 +131,13 @@ export const auth = betterAuth({
 			sendDeleteAccountVerification: async ({ user, url, token }, request) => {
 				const urlObj = new URL(url)
 				const callbackURL = urlObj.searchParams.get('callbackURL')
-				const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+				const newUrl =
+					(process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+					: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+					: `https://${process.env.BASE_URL}`) +
+					callbackURL! +
+					'?token=' +
+					token
 
 				await sendEmail({
 					to: user.email,
@@ -138,12 +157,21 @@ export const auth = betterAuth({
 		sendResetPassword: async ({ user, url, token }, request) => {
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+			const newUrl =
+				(process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+				: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+				: `https://${process.env.BASE_URL}`) +
+				callbackURL! +
+				'?token=' +
+				token
 
 			await sendEmail({
 				to: user.email,
 				subject: 'Reset your password',
-				text: `Click the link to reset your password: ${newUrl}`,
+				html: await reactResetPasswordEmail({
+					username: user.name, // not really a username, but the name of the user
+					resetLink: newUrl,
+				}),
 			})
 		},
 	},
@@ -152,11 +180,17 @@ export const auth = betterAuth({
 		sendOnSignUp: true,
 		autoSignInAfterVerification: false,
 		sendVerificationEmail: async ({ user, url, token }, request) => {
-			// if (!user) return // if user doesn't exist, don't send the email or the user just changed the email
+			if (!user) return // if user doesn't exist, don't send the email or the user just changed the email
 
 			const urlObj = new URL(url)
 			const callbackURL = urlObj.searchParams.get('callbackURL')
-			const newUrl = (process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`) + callbackURL! + '?token=' + token
+			const newUrl =
+				(process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+				: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+				: `https://${process.env.BASE_URL}`) +
+				callbackURL! +
+				'?token=' +
+				token
 
 			await sendEmail({
 				to: user.email,
@@ -174,7 +208,7 @@ export const auth = betterAuth({
 		cookieCache: {
 			// Cache the session cookie for 1 minute
 			enabled: true,
-			maxAge: 1 * 60, // Cache duration in seconds
+			maxAge: 30, // Cache duration in seconds
 		},
 	},
 
@@ -217,7 +251,6 @@ export const auth = betterAuth({
 					if (user?.id) {
 						const oldUserData = await db.select().from(schema.user).where(eq(schema.user.id, user.id))
 						if (oldUserData[0].image !== user.image) {
-							console.log('oldUserData[0].image:', oldUserData[0].image)
 							await deleteUserAvatar(oldUserData[0].image)
 						}
 					}
@@ -265,13 +298,16 @@ export const auth = betterAuth({
 			}
 		}),
 		after: createAuthMiddleware(async (ctx) => {
-			const url = process.env.NODE_ENV === 'development' ? process.env.BASE_URL : process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL : `https://${process.env.BASE_URL}`
+			const url =
+				process.env.NODE_ENV === 'development' ? process.env.BASE_URL
+				: process.env.BASE_URL?.startsWith('http') ? process.env.BASE_URL
+				: `https://${process.env.BASE_URL}`
 
 			switch (ctx.query?.error) {
 				case 'account_already_linked_to_different_user':
-					throw ctx.redirect(`${url}/error/?error=account_already_linked_to_different_user`)
+					throw ctx.redirect(`${url}/?error=Account already linked to different user`)
 				case "email_doesn't_match":
-					throw ctx.redirect(`${url}/error/?error=email_doesnt_match`)
+					throw ctx.redirect(`${url}/?error=Email doesn't match`)
 				default:
 					break
 			}
@@ -279,7 +315,6 @@ export const auth = betterAuth({
 	},
 
 	plugins: [
-		admin(),
 		username(),
 		admin(),
 		twoFactor({

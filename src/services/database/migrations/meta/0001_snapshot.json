@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "b1e475fa-ee64-45ec-bc99-4517e09769d3",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "5dac58f3-bcd3-4725-9056-567664165d76",
+  "prevId": "b1e475fa-ee64-45ec-bc99-4517e09769d3",
   "tables": {
     "account": {
       "name": "account",
@@ -256,7 +256,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "downvotes_user_id_user_id_fk": {
@@ -514,6 +514,19 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
+        "notifications_relatedUserId_user_id_fk": {
+          "name": "notifications_relatedUserId_user_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "user",
+          "columnsFrom": [
+            "relatedUserId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "notifications_postId_posts_id_fk": {
           "name": "notifications_postId_posts_id_fk",
           "tableFrom": "notifications",
@@ -524,7 +537,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -764,7 +777,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "shares_userId_user_id_fk": {
@@ -895,7 +908,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "upvotes_user_id_user_id_fk": {

@@ -6,7 +6,7 @@ import cors from 'cors'
 import path from 'path'
 
 import { toNodeHandler } from 'better-auth/node'
-import { auth, limiter } from '~/utils/index'
+import { auth, limiter } from '~/lib/index'
 
 import routes from '~/routes/index'
 import * as middlewares from './middlewares'
@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'docker') 
 	app.use(express.static(path.join(__dirname, '../dist')))
 }
 
-app.all('/auth/*', toNodeHandler(auth))
+app.all('/auth/*splat', toNodeHandler(auth))
 
 app.use(express.json())
 app.use('/v0/', routes)
