@@ -145,6 +145,28 @@ export const downvotes = mysqlTable('downvotes', {
 	createdAt: timestamp('createdAt').notNull(),
 })
 
+export const comments_upvotes = mysqlTable('comments_upvotes', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	commentId: varchar('commentId', { length: 36 })
+		.notNull()
+		.references(() => comments.id, { onDelete: 'cascade' }),
+	userId: varchar('user_id', { length: 36 })
+		.notNull()
+		.references(() => user.id),
+	createdAt: timestamp('createdAt').notNull(),
+})
+
+export const comments_downvotes = mysqlTable('comments_downvotes', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	commentId: varchar('commentId', { length: 36 })
+		.notNull()
+		.references(() => comments.id, { onDelete: 'cascade' }),
+	userId: varchar('user_id', { length: 36 })
+		.notNull()
+		.references(() => user.id),
+	createdAt: timestamp('createdAt').notNull(),
+})
+
 export const messages = mysqlTable('messages', {
 	id: varchar('id', { length: 36 }).primaryKey(),
 	senderId: varchar('senderId', { length: 36 })
@@ -207,6 +229,12 @@ type InsertUpvote = InferInsertModel<typeof upvotes>
 type Downvote = InferSelectModel<typeof downvotes>
 type InsertDownvote = InferInsertModel<typeof downvotes>
 
+type CommentsUpvote = InferSelectModel<typeof comments_upvotes>
+type InsertCommentsUpvote = InferInsertModel<typeof comments_upvotes>
+
+type CommentsDownvote = InferSelectModel<typeof comments_downvotes>
+type InsertCommentsDownvote = InferInsertModel<typeof comments_downvotes>
+
 type Messages = InferSelectModel<typeof messages>
 type InsertMessages = InferInsertModel<typeof messages>
 
@@ -225,6 +253,9 @@ export type { Comments, InsertComments }
 
 export type { Upvote, InsertUpvote }
 export type { Downvote, InsertDownvote }
+
+export type { CommentsUpvote, InsertCommentsUpvote }
+export type { CommentsDownvote, InsertCommentsDownvote }
 
 export type { Messages, InsertMessages }
 export type { Notifications, InsertNotifications }
