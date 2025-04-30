@@ -1,11 +1,12 @@
 import type { Request, Response } from 'express'
 import { eq, and, isNull, desc, asc } from 'drizzle-orm'
+import { fromNodeHeaders } from 'better-auth/node'
 import { nanoid } from 'nanoid'
 
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
 
-import { handler } from '~/lib/index'
+import { auth, handler } from '~/lib/index'
 import logger from '~/lib/logger'
 
 export const getCommentsByPost = handler(async (req: Request, res: Response) => {
@@ -15,10 +16,21 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 	const limit = 15
 	const offset = (Number(page) - 1) * limit
 
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+		query: {
+			disableCookieCache: true,
+		},
+	})
+
 	let arrayComments = [] as Partial<
 		schema.Comments & {
-			username: string | null
-			avatar: string | null
+			user: {
+				username: string | null
+				image: string | null
+			}
+			upvoted?: boolean
+			downvoted?: boolean
 		}
 	>[]
 
@@ -39,6 +51,9 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 							username: string | null
 							image: string | null
 						}
+
+						upvoted?: boolean
+						downvoted?: boolean
 					}
 				>
 
@@ -56,6 +71,31 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 				newComment.user = {
 					username: user.username,
 					image: user.image,
+				}
+
+				if (session && session.user) {
+					const userIdString = session.user.id
+
+					const upvote = await db
+						.select()
+						.from(schema.comments_upvotes)
+						.where(and(eq(schema.comments_upvotes.commentId, comment.id), eq(schema.comments_upvotes.userId, userIdString)))
+						.limit(1)
+						.then((upvotes) => {
+							return upvotes[0]
+						})
+
+					const downvote = await db
+						.select()
+						.from(schema.comments_downvotes)
+						.where(and(eq(schema.comments_downvotes.commentId, comment.id), eq(schema.comments_downvotes.userId, userIdString)))
+						.limit(1)
+						.then((downvotes) => {
+							return downvotes[0]
+						})
+
+					newComment.upvoted = upvote ? true : false
+					newComment.downvoted = downvote ? true : false
 				}
 
 				return newComment
@@ -79,10 +119,21 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 	const limit = 5
 	const offset = (Number(page) - 1) * limit
 
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+		query: {
+			disableCookieCache: true,
+		},
+	})
+
 	let arrayReplies = [] as Partial<
 		schema.Comments & {
-			username: string | null
-			avatar: string | null
+			user: {
+				username: string | null
+				image: string | null
+			}
+			upvoted?: boolean
+			downvoted?: boolean
 		}
 	>[]
 
@@ -103,6 +154,8 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 							username: string | null
 							image: string | null
 						}
+						upvoted?: boolean
+						downvoted?: boolean
 					}
 				>
 
@@ -120,6 +173,31 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 				newReply.user = {
 					username: user.username,
 					image: user.image,
+				}
+
+				if (session && session.user) {
+					const userIdString = session.user.id
+
+					const upvote = await db
+						.select()
+						.from(schema.comments_upvotes)
+						.where(and(eq(schema.comments_upvotes.commentId, reply.id), eq(schema.comments_upvotes.userId, userIdString)))
+						.limit(1)
+						.then((upvotes) => {
+							return upvotes[0]
+						})
+
+					const downvote = await db
+						.select()
+						.from(schema.comments_downvotes)
+						.where(and(eq(schema.comments_downvotes.commentId, reply.id), eq(schema.comments_downvotes.userId, userIdString)))
+						.limit(1)
+						.then((downvotes) => {
+							return downvotes[0]
+						})
+
+					newReply.upvoted = upvote ? true : false
+					newReply.downvoted = downvote ? true : false
 				}
 
 				return newReply
@@ -187,6 +265,159 @@ export const createReply = handler(async (req: Request, res: Response) => {
 				data: 'Failed to insert reply',
 			})
 
+			return null
+		})
+
+	res.status(200).json({
+		data: 'Success',
+	})
+})
+
+export const upvoteComment = handler(async (req: Request, res: Response) => {
+	const { commentId } = req.params
+	const { userId } = req.body as schema.InsertUpvote
+
+	const existingDownVote = await db
+		.select()
+		.from(schema.comments_downvotes)
+		.where(and(eq(schema.comments_downvotes.commentId, commentId), eq(schema.comments_downvotes.userId, userId)))
+		.limit(1)
+
+	const existingUpvote = await db
+		.select()
+		.from(schema.comments_upvotes)
+		.where(and(eq(schema.comments_upvotes.commentId, commentId), eq(schema.comments_upvotes.userId, userId)))
+		.limit(1)
+
+	if (existingDownVote.length > 0) {
+		const existingDownvoteId = existingDownVote[0].id
+
+		await db
+			.delete(schema.comments_downvotes)
+			.where(eq(schema.comments_downvotes.id, existingDownvoteId))
+			.catch((error) => {
+				logger.error('Error removing downvote', { error })
+
+				res.status(500).json({
+					data: 'Failed to unlike post',
+				})
+
+				return null
+			})
+	}
+
+	if (existingUpvote.length > 0) {
+		const existingVoteId = existingUpvote[0].id
+
+		await db
+			.delete(schema.comments_upvotes)
+			.where(eq(schema.comments_upvotes.id, existingVoteId))
+			.catch((error) => {
+				logger.error('Error removing upvote', { error })
+
+				res.status(500).json({
+					data: 'Failed to unlike post',
+				})
+
+				return null
+			})
+
+		res.status(200).json({
+			data: 'Success',
+		})
+		return
+	}
+
+	await db
+		.insert(schema.comments_upvotes)
+		.values({
+			id: nanoid(17),
+			commentId: commentId,
+			userId: userId,
+			createdAt: new Date(), // Use the current date as the createdAt value
+		})
+		.catch((error) => {
+			logger.error('Error inserting upvote', { error })
+
+			res.status(500).json({
+				data: 'Failed to upvote post',
+			})
+
+			return null
+		})
+
+	res.status(200).json({
+		data: 'Success',
+	})
+})
+
+export const downvoteComment = handler(async (req: Request, res: Response) => {
+	const { commentId } = req.params
+	const { userId } = req.body as schema.InsertDownvote
+
+	const existingUpvote = await db
+		.select()
+		.from(schema.comments_upvotes)
+		.where(and(eq(schema.comments_upvotes.commentId, commentId), eq(schema.comments_upvotes.userId, userId)))
+		.limit(1)
+
+	const existingDownVote = await db
+		.select()
+		.from(schema.comments_downvotes)
+		.where(and(eq(schema.comments_downvotes.commentId, commentId), eq(schema.comments_downvotes.userId, userId)))
+		.limit(1)
+
+	if (existingUpvote.length > 0) {
+		const existingUpvoteId = existingUpvote[0].id
+
+		await db
+			.delete(schema.comments_upvotes)
+			.where(eq(schema.comments_upvotes.id, existingUpvoteId))
+			.catch((error) => {
+				logger.error('Error removing upvote', { error })
+
+				res.status(500).json({
+					data: 'Failed to unlike post',
+				})
+
+				return null
+			})
+	}
+
+	if (existingDownVote.length > 0) {
+		const existingDownvoteId = existingDownVote[0].id
+
+		await db
+			.delete(schema.comments_downvotes)
+			.where(eq(schema.comments_downvotes.id, existingDownvoteId))
+			.catch((error) => {
+				logger.error('Error removing downvote', { error })
+
+				res.status(500).json({
+					data: 'Failed to unlike post',
+				})
+
+				return null
+			})
+
+		res.status(200).json({
+			data: 'Success',
+		})
+		return
+	}
+
+	await db
+		.insert(schema.comments_downvotes)
+		.values({
+			id: nanoid(17),
+			commentId: commentId,
+			userId: userId,
+			createdAt: new Date(), // Use the current date as the createdAt value
+		})
+		.catch((error) => {
+			logger.error('Error inserting downvote', { error })
+
+			res.status(500).json({})
 			return null
 		})
 
