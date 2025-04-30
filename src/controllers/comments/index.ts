@@ -54,6 +54,8 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 
 						upvoted?: boolean
 						downvoted?: boolean
+
+						replyCount: number
 					}
 				>
 
@@ -97,6 +99,14 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 					newComment.upvoted = upvote ? true : false
 					newComment.downvoted = downvote ? true : false
 				}
+
+				newComment.replyCount = await db
+					.select()
+					.from(schema.comments)
+					.where(eq(schema.comments.parentId, comment.id))
+					.then((replies) => {
+						return replies.length
+					}) // Count the number of replies to the comment
 
 				return newComment
 			})
@@ -156,6 +166,8 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 						}
 						upvoted?: boolean
 						downvoted?: boolean
+
+						replyCount: number
 					}
 				>
 
@@ -199,6 +211,14 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 					newReply.upvoted = upvote ? true : false
 					newReply.downvoted = downvote ? true : false
 				}
+
+				newReply.replyCount = await db
+					.select()
+					.from(schema.comments)
+					.where(eq(schema.comments.parentId, reply.id))
+					.then((replies) => {
+						return replies.length
+					}) // Count the number of replies to the comment
 
 				return newReply
 			})
