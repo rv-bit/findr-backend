@@ -24,10 +24,10 @@
 		// Best practices
 		"strict": true,
 		"skipLibCheck": true,
-		"noFallthroughCasesInSwitch": true,
+		"noFallthroughCasesInSwitch": true
 
 		// Some stricter flags that are not enabled by default
-		"noUnusedLocals": true
+		// "noUnusedLocals": true
 		// "noUnusedParameters": true
 
 		// used for like process.env["NODE_ENV"] and not process.env.NODE_ENV
