@@ -9,7 +9,7 @@ export interface NewPostSchema {
 
 export const newPostSchema = Joi.object({
 	slug: Joi.string().required(),
-	title: Joi.string().required(),
+	title: Joi.string().required().max(100),
 	content: Joi.string().required(),
 	userId: Joi.string().required(),
 })
