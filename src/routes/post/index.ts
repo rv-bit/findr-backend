@@ -10,6 +10,7 @@ const router = Router()
 
 router.get('/', controller.getAllPosts)
 router.get('/:postId', controller.getPostById)
+router.get('/voted/:postId', controller.getPostVoteById)
 
 router.post('/insert', authHandler() as RequestHandler, validateRequest(newPostSchema) as RequestHandler, controller.insertPost)
 router.post('/edit/:postId', authHandler() as RequestHandler, validateRequest(editPostSchema) as RequestHandler, controller.editPost)

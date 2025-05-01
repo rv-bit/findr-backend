@@ -57,9 +57,6 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 					.limit(1)
 					.then((user) => user[0])
 
-				const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
-				const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
-
 				const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
 				const downvotesCount = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
 
@@ -72,8 +69,26 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 				if (session && session.user) {
 					const userIdString = session.user.id
 
-					newPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
-					newPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
+					const upvoted = await db
+						.select()
+						.from(schema.upvotes)
+						.where(and(eq(schema.upvotes.postId, post.id), eq(schema.upvotes.userId, userIdString)))
+						.limit(1)
+						.then((upvotes) => {
+							return upvotes[0]
+						})
+
+					const downvoted = await db
+						.select()
+						.from(schema.downvotes)
+						.where(and(eq(schema.downvotes.postId, post.id), eq(schema.downvotes.userId, userIdString)))
+						.limit(1)
+						.then((downvotes) => {
+							return downvotes[0]
+						})
+
+					newPost.upvoted = upvoted ? true : false
+					newPost.downvoted = downvoted ? true : false
 				}
 
 				newPost.user = {
@@ -136,9 +151,6 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 		}
 	>
 
-	const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
-	const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
-
 	const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
 	const downvotesCount = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
 
@@ -147,13 +159,6 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 
 	copyPost.likesCount = likes
 	copyPost.commentsCount = comments.length
-
-	if (session && session.user) {
-		const userIdString = session.user.id
-
-		copyPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
-		copyPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
-	}
 
 	const user = await db
 		.select()
@@ -164,6 +169,31 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 
 	const commentsCount = await db.$count(schema.comments, eq(schema.comments.userId, user.id))
 	const postsCount = await db.$count(schema.posts, eq(schema.posts.userId, user.id))
+
+	if (session && session.user) {
+		const userIdString = session.user.id
+
+		const upvoted = await db
+			.select()
+			.from(schema.upvotes)
+			.where(and(eq(schema.upvotes.postId, postId), eq(schema.upvotes.userId, userIdString)))
+			.limit(1)
+			.then((upvotes) => {
+				return upvotes[0]
+			})
+
+		const downvoted = await db
+			.select()
+			.from(schema.downvotes)
+			.where(and(eq(schema.downvotes.postId, postId), eq(schema.downvotes.userId, userIdString)))
+			.limit(1)
+			.then((downvotes) => {
+				return downvotes[0]
+			})
+
+		copyPost.upvoted = upvoted ? true : false
+		copyPost.downvoted = downvoted ? true : false
+	}
 
 	delete copyPost.userId
 
@@ -180,6 +210,51 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 
 	res.status(200).json({
 		data: copyPost,
+	})
+})
+
+export const getPostVoteById = handler(async (req: Request, res: Response) => {
+	const { postId } = req.params
+
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+		query: {
+			disableCookieCache: true,
+		},
+	})
+
+	const data = {} as {
+		upvoted: boolean
+		downvoted: boolean
+	}
+
+	if (session && session.user) {
+		const userIdString = session.user.id
+
+		const upvoted = await db
+			.select()
+			.from(schema.upvotes)
+			.where(and(eq(schema.upvotes.postId, postId), eq(schema.upvotes.userId, userIdString)))
+			.limit(1)
+			.then((upvotes) => {
+				return upvotes[0]
+			})
+
+		const downvoted = await db
+			.select()
+			.from(schema.downvotes)
+			.where(and(eq(schema.downvotes.postId, postId), eq(schema.downvotes.userId, userIdString)))
+			.limit(1)
+			.then((downvotes) => {
+				return downvotes[0]
+			})
+
+		data.upvoted = upvoted ? true : false
+		data.downvoted = downvoted ? true : false
+	}
+
+	res.status(200).json({
+		data: data,
 	})
 })
 
