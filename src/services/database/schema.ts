@@ -96,12 +96,12 @@ export const comments = mysqlTable('comments', {
 	id: varchar('id', { length: 36 }).primaryKey(),
 	postId: varchar('post_id', { length: 36 })
 		.notNull()
-		.references(() => posts.id),
+		.references(() => posts.id, { onDelete: 'cascade' }),
 	parentId: varchar('parent_id', { length: 36 }), // self-referencing
 	text: varchar({ length: 256 }),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: 'cascade' }),
 	createdAt: timestamp('created_at').notNull(),
 	updatedAt: timestamp('updated_at').notNull(),
 })
