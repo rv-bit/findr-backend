@@ -6,13 +6,13 @@ export const getCommentsSchema = Joi.object({
 
 export const newCommentSchema = Joi.object({
 	postId: Joi.string().required(),
-	content: Joi.string().required(),
+	content: Joi.string().required().max(600),
 	userId: Joi.string().required(),
 })
 
 export const newCommentReplySchema = Joi.object({
 	postId: Joi.string().required(),
 	commentId: Joi.string().required(),
-	content: Joi.string().required(),
+	content: Joi.string().required().max(600),
 	userId: Joi.string().required(),
 })
