@@ -40,7 +40,7 @@ export async function uploadUserAvatar(base64Image: string, userId?: string) {
 		// Generate unique filename: userId (if provided) + timestamp
 		const timestamp = Date.now()
 		const objectKey = `${userId ? `${userId}_` : ''}${timestamp}.${fileExtension}`
-		const cloudFrontUrl = process.env.AWS_CLOUDFRONT_URL
+		const cloudFrontUrl = process.env.AWS_CLOUD_FRONT_URL
 
 		await S3_CLIENT_AVATAR_BUCKET.write(objectKey, buffer, {
 			type: contentType,
