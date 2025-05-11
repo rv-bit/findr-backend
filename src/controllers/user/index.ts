@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { eq, sql } from 'drizzle-orm'
+import { desc, eq, sql } from 'drizzle-orm'
 
 import * as schema from '~/services/database/schema'
 import db from '~/services/database/database'
@@ -77,7 +77,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 	const userIdString = users[0].id.toString()
 	switch (type) {
 		case 'overview': {
-			const limit = 5
+			const limit = 10
 			const offset = (Number(page) - 1) * limit
 
 			let arrayPosts = [] as Partial<PostResponse>[]
@@ -88,6 +88,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 				.where(eq(schema.posts.userId, userIdString))
 				.limit(limit + 1)
 				.offset(offset)
+				.orderBy(desc(schema.posts.createdAt))
 
 			const comments = await db
 				.select()
@@ -95,6 +96,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 				.where(eq(schema.comments.userId, userIdString))
 				.limit(limit + 1)
 				.offset(offset)
+				.orderBy(desc(schema.comments.createdAt))
 
 			if (comments.length > 0) {
 				arrayComments = await Promise.all(
@@ -153,7 +155,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 			break
 		}
 		case 'posts': {
-			const limit = 5
+			const limit = 10
 			const offset = (Number(page) - 1) * limit
 
 			let arrayPosts = [] as Partial<PostResponse>[]
@@ -163,6 +165,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 				.where(eq(schema.posts.userId, userIdString))
 				.limit(limit + 1)
 				.offset(offset)
+				.orderBy(desc(schema.posts.createdAt))
 
 			if (posts.length > 0) {
 				arrayPosts = await Promise.all(
@@ -199,7 +202,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 			break
 		}
 		case 'comments': {
-			const limit = 5
+			const limit = 10
 			const offset = (Number(page) - 1) * limit
 
 			let arrayComments = [] as Partial<CommentResponse>[]
@@ -209,6 +212,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 				.where(eq(schema.comments.userId, userIdString))
 				.limit(limit + 1)
 				.offset(offset)
+				.orderBy(desc(schema.comments.createdAt))
 
 			if (comments.length > 0) {
 				arrayComments = await Promise.all(
