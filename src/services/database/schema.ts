@@ -98,7 +98,7 @@ export const comments = mysqlTable('comments', {
 		.notNull()
 		.references(() => posts.id, { onDelete: 'cascade' }),
 	parentId: varchar('parent_id', { length: 36 }), // self-referencing
-	text: varchar({ length: 256 }),
+	text: longtext().notNull(),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
