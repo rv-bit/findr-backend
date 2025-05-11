@@ -38,7 +38,7 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 		.select()
 		.from(schema.comments)
 		.where(and(eq(schema.comments.postId, postId), isNull(schema.comments.parentId)))
-		.orderBy(asc(schema.comments.createdAt))
+		.orderBy(desc(schema.comments.createdAt))
 		.limit(limit + 1)
 		.offset(offset)
 
