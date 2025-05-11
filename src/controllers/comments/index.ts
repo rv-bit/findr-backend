@@ -13,7 +13,7 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 	const { postId } = req.params
 	const { page } = req.query
 
-	const limit = 15
+	const limit = 10
 	const offset = (Number(page) - 1) * limit
 
 	const session = await auth.api.getSession({
@@ -126,7 +126,7 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 	const { commentId } = req.params
 	const { page } = req.query
 
-	const limit = 5
+	const limit = 3
 	const offset = (Number(page) - 1) * limit
 
 	const session = await auth.api.getSession({
