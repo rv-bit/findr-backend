@@ -9,6 +9,10 @@ import db from '~/services/database/database'
 import { auth, handler } from '~/lib/index'
 import logger from '~/lib/logger'
 
+import type { PostResponse } from '~/lib/types/shared'
+
+import { getPostByPostId } from '../shared/post'
+
 export const getCommentsByPost = handler(async (req: Request, res: Response) => {
 	const { postId } = req.params
 	const { page } = req.query
@@ -38,6 +42,228 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 		.select()
 		.from(schema.comments)
 		.where(and(eq(schema.comments.postId, postId), isNull(schema.comments.parentId)))
+		.orderBy(desc(schema.comments.createdAt))
+		.limit(limit + 1)
+		.offset(offset)
+
+	if (comments.length > 0) {
+		arrayComments = await Promise.all(
+			comments.map(async (comment: schema.Comments) => {
+				const newComment = { ...comment } as Partial<
+					schema.Comments & {
+						user: {
+							username: string | null
+							image: string | null
+						}
+
+						upvoted?: boolean
+						downvoted?: boolean
+
+						replyCount: number
+					}
+				>
+
+				const user = await db
+					.select()
+					.from(schema.user)
+					.where(eq(schema.user.id, comment.userId))
+					.limit(1)
+					.then((user) => {
+						return user[0]
+					})
+
+				delete newComment.userId
+
+				newComment.user = {
+					username: user.username,
+					image: user.image,
+				}
+
+				if (session && session.user) {
+					const userIdString = session.user.id
+
+					const upvote = await db
+						.select()
+						.from(schema.comments_upvotes)
+						.where(and(eq(schema.comments_upvotes.commentId, comment.id), eq(schema.comments_upvotes.userId, userIdString)))
+						.limit(1)
+						.then((upvotes) => {
+							return upvotes[0]
+						})
+
+					const downvote = await db
+						.select()
+						.from(schema.comments_downvotes)
+						.where(and(eq(schema.comments_downvotes.commentId, comment.id), eq(schema.comments_downvotes.userId, userIdString)))
+						.limit(1)
+						.then((downvotes) => {
+							return downvotes[0]
+						})
+
+					newComment.upvoted = upvote ? true : false
+					newComment.downvoted = downvote ? true : false
+				}
+
+				newComment.replyCount = await db
+					.select()
+					.from(schema.comments)
+					.where(eq(schema.comments.parentId, comment.id))
+					.then((replies) => {
+						return replies.length
+					}) // Count the number of replies to the comment
+
+				return newComment
+			})
+		)
+	}
+
+	const hasNextPage = comments.length > limit
+	const paginatedComments = hasNextPage ? arrayComments.slice(0, limit) : arrayComments
+
+	res.status(200).json({
+		data: paginatedComments,
+		nextCursor: hasNextPage ? Number(page) + 1 : undefined,
+	})
+})
+
+export const getCommentByPostAndComment = handler(async (req: Request, res: Response) => {
+	const { commentId } = req.params
+
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+		query: {
+			disableCookieCache: true,
+		},
+	})
+
+	const comment = await db
+		.select()
+		.from(schema.comments)
+		.where(eq(schema.comments.id, commentId))
+		.limit(1)
+		.then((comments) => {
+			if (comments.length > 0) {
+				const comment = comments[0]
+				return comment
+			} else {
+				return null
+			}
+		})
+
+	if (!comment) {
+		res.status(404).json({
+			data: 'Comment not found',
+		})
+		return
+	}
+
+	const post = await getPostByPostId(comment.postId, session)
+
+	if (!post) {
+		res.status(404).json({
+			data: 'Post not found',
+		})
+		return
+	}
+
+	const newComment = { ...comment } as Partial<
+		schema.Comments & {
+			user: {
+				username: string | null
+				image: string | null
+			}
+
+			upvoted?: boolean
+			downvoted?: boolean
+
+			replyCount: number
+		}
+	>
+
+	const user = await db
+		.select()
+		.from(schema.user)
+		.where(eq(schema.user.id, comment.userId))
+		.limit(1)
+		.then((user) => {
+			return user[0]
+		})
+
+	delete newComment.userId
+
+	newComment.user = {
+		username: user.username,
+		image: user.image,
+	}
+
+	if (session && session.user) {
+		const userIdString = session.user.id
+
+		const upvote = await db
+			.select()
+			.from(schema.comments_upvotes)
+			.where(and(eq(schema.comments_upvotes.commentId, comment.id), eq(schema.comments_upvotes.userId, userIdString)))
+			.limit(1)
+			.then((upvotes) => {
+				return upvotes[0]
+			})
+
+		const downvote = await db
+			.select()
+			.from(schema.comments_downvotes)
+			.where(and(eq(schema.comments_downvotes.commentId, comment.id), eq(schema.comments_downvotes.userId, userIdString)))
+			.limit(1)
+			.then((downvotes) => {
+				return downvotes[0]
+			})
+
+		newComment.upvoted = upvote ? true : false
+		newComment.downvoted = downvote ? true : false
+	}
+
+	newComment.replyCount = await db
+		.select()
+		.from(schema.comments)
+		.where(eq(schema.comments.parentId, comment.id))
+		.then((replies) => {
+			return replies.length
+		}) // Count the number of replies to the comment
+
+	res.status(200).json({
+		postData: post,
+		commentData: newComment,
+	})
+})
+
+export const getCommentsByPostAndComment = handler(async (req: Request, res: Response) => {
+	const { postId, commentId } = req.params
+	const { page } = req.query
+
+	const limit = 3
+	const offset = (Number(page) - 1) * limit
+
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+		query: {
+			disableCookieCache: true,
+		},
+	})
+
+	let arrayComments = [] as Partial<
+		schema.Comments & {
+			user: {
+				username: string | null
+				image: string | null
+			}
+			upvoted?: boolean
+			downvoted?: boolean
+		}
+	>[]
+
+	const comments = await db
+		.select()
+		.from(schema.comments)
+		.where(and(eq(schema.comments.postId, postId), eq(schema.comments.parentId, commentId)))
 		.orderBy(desc(schema.comments.createdAt))
 		.limit(limit + 1)
 		.offset(offset)
