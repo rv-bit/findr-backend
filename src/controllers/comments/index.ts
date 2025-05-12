@@ -4,7 +4,7 @@ import { fromNodeHeaders } from 'better-auth/node'
 import { nanoid } from 'nanoid'
 
 import * as schema from '~/services/database/schema'
-import db from '~/services/database/database'
+import db from '~/services/database'
 
 import { auth, handler } from '~/lib/index'
 import logger from '~/lib/logger'

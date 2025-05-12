@@ -2,7 +2,7 @@ import type { Request, Response } from 'express'
 import { desc, eq, sql } from 'drizzle-orm'
 
 import * as schema from '~/services/database/schema'
-import db from '~/services/database/database'
+import db from '~/services/database'
 
 import { handler } from '~/lib/index'
 

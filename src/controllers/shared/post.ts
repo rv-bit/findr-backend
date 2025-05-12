@@ -4,7 +4,7 @@ import { type Session } from '~/lib/auth'
 import logger from '~/lib/logger'
 
 import * as schema from '~/services/database/schema'
-import db from '~/services/database/database'
+import db from '~/services/database'
 
 import type { PostResponse } from '~/lib/types/shared'
 
