@@ -23,14 +23,15 @@ export const getPostByPostId = async (postId: string, session?: Session | null) 
 	}
 
 	const copyPost = { ...post } as Partial<
-		PostResponse & {
-			user: {
-				username: string | null
-				image: string | null
+		schema.Posts &
+			PostResponse & {
+				user: {
+					username: string | null
+					image: string | null
 
-				createdAt: Date | null
+					createdAt: Date | null
+				}
 			}
-		}
 	>
 
 	const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))

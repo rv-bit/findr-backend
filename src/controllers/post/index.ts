@@ -30,10 +30,11 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 	const offset = (Number(page) - 1) * limit
 
 	let arrayPosts = [] as Partial<
-		PostResponse & {
-			username: string | null
-			avatar: string | null
-		}
+		schema.Posts &
+			PostResponse & {
+				username: string | null
+				avatar: string | null
+			}
 	>[]
 	const posts = await db
 		.select()
@@ -43,14 +44,15 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 
 	if (posts.length > 0) {
 		arrayPosts = await Promise.all(
-			posts.map(async (post: PostResponse) => {
+			posts.map(async (post: schema.Posts & PostResponse) => {
 				const newPost = { ...post } as Partial<
-					PostResponse & {
-						user: {
-							username: string | null
-							image: string | null
+					schema.Posts &
+						PostResponse & {
+							user: {
+								username: string | null
+								image: string | null
+							}
 						}
-					}
 				>
 				delete newPost.userId
 
