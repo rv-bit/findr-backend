@@ -80,8 +80,8 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 			const limit = 10
 			const offset = (Number(page) - 1) * limit
 
-			let arrayPosts = [] as Partial<PostResponse>[]
-			let arrayComments = [] as Partial<CommentResponse>[]
+			let arrayPosts = [] as Partial<schema.Posts & PostResponse>[]
+			let arrayComments = [] as Partial<schema.Comments & CommentResponse>[]
 			const posts = await db
 				.select()
 				.from(schema.posts)
@@ -100,8 +100,8 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 
 			if (comments.length > 0) {
 				arrayComments = await Promise.all(
-					comments.map(async (comment: CommentResponse) => {
-						const newComment = { ...comment } as Partial<CommentResponse>
+					comments.map(async (comment: schema.Comments & CommentResponse) => {
+						const newComment = { ...comment } as Partial<schema.Comments & CommentResponse>
 						delete newComment.userId // removing it from the response
 
 						if (!comment.postId) {
@@ -113,6 +113,33 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 							newComment.postTitle = post[0].title
 						}
 
+						if (newComment.parentId) {
+							const userThatRepliedTo = await db.select().from(schema.comments).where(eq(schema.comments.id, newComment.parentId)).limit(1)
+
+							if (userThatRepliedTo) {
+								const userId = userThatRepliedTo[0].userId
+								const user = await db
+									.select()
+									.from(schema.user)
+									.where(eq(schema.user.id, userId))
+									.limit(1)
+									.then((user) => user[0])
+								newComment.repliedTo = user.username
+							}
+						}
+
+						const upvotes = await db.select().from(schema.comments_upvotes).where(eq(schema.comments_upvotes.commentId, comment.id))
+						const downvotes = await db.select().from(schema.comments_downvotes).where(eq(schema.comments_downvotes.commentId, comment.id))
+
+						const upvotesCount = await db.$count(schema.comments_upvotes, eq(schema.comments_upvotes.commentId, comment.id))
+						const downvotesCont = await db.$count(schema.comments_downvotes, eq(schema.comments_downvotes.commentId, comment.id))
+
+						const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+						newComment.likesCount = likes
+
+						newComment.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
+						newComment.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
+
 						return newComment
 					})
 				)
@@ -120,8 +147,8 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 
 			if (posts.length > 0) {
 				arrayPosts = await Promise.all(
-					posts.map(async (post: PostResponse) => {
-						const newPost = { ...post } as Partial<PostResponse>
+					posts.map(async (post: schema.Posts & PostResponse) => {
+						const newPost = { ...post } as Partial<schema.Posts & PostResponse>
 						delete newPost.userId
 
 						const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
@@ -158,7 +185,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 			const limit = 10
 			const offset = (Number(page) - 1) * limit
 
-			let arrayPosts = [] as Partial<PostResponse>[]
+			let arrayPosts = [] as Partial<schema.Posts & PostResponse>[]
 			const posts = await db
 				.select()
 				.from(schema.posts)
@@ -169,8 +196,8 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 
 			if (posts.length > 0) {
 				arrayPosts = await Promise.all(
-					posts.map(async (post: PostResponse) => {
-						const newPost = { ...post } as Partial<PostResponse>
+					posts.map(async (post: schema.Posts & PostResponse) => {
+						const newPost = { ...post } as Partial<schema.Posts & PostResponse>
 						delete newPost.userId
 
 						const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
@@ -216,8 +243,8 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 
 			if (comments.length > 0) {
 				arrayComments = await Promise.all(
-					comments.map(async (comment: CommentResponse) => {
-						const newComment = { ...comment } as Partial<CommentResponse>
+					comments.map(async (comment: schema.Comments & CommentResponse) => {
+						const newComment = { ...comment } as Partial<schema.Comments & CommentResponse>
 						delete newComment.userId // removing it from the response
 
 						if (!comment.postId) {
@@ -228,6 +255,33 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 						if (post) {
 							newComment.postTitle = post[0].title
 						}
+
+						if (newComment.parentId) {
+							const userThatRepliedTo = await db.select().from(schema.comments).where(eq(schema.comments.id, newComment.parentId)).limit(1)
+
+							if (userThatRepliedTo) {
+								const userId = userThatRepliedTo[0].userId
+								const user = await db
+									.select()
+									.from(schema.user)
+									.where(eq(schema.user.id, userId))
+									.limit(1)
+									.then((user) => user[0])
+								newComment.repliedTo = user.username
+							}
+						}
+
+						const upvotes = await db.select().from(schema.comments_upvotes).where(eq(schema.comments_upvotes.commentId, comment.id))
+						const downvotes = await db.select().from(schema.comments_downvotes).where(eq(schema.comments_downvotes.commentId, comment.id))
+
+						const upvotesCount = await db.$count(schema.comments_upvotes, eq(schema.comments_upvotes.commentId, comment.id))
+						const downvotesCont = await db.$count(schema.comments_downvotes, eq(schema.comments_downvotes.commentId, comment.id))
+
+						const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+						newComment.likesCount = likes
+
+						newComment.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
+						newComment.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
 
 						return newComment
 					})
