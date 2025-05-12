@@ -126,7 +126,7 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 	})
 })
 
-export const getCommentByPostAndComment = handler(async (req: Request, res: Response) => {
+export const getParentCommentByComment = handler(async (req: Request, res: Response) => {
 	const { commentId } = req.params
 
 	const session = await auth.api.getSession({
@@ -136,10 +136,31 @@ export const getCommentByPostAndComment = handler(async (req: Request, res: Resp
 		},
 	})
 
-	const comment = await db
+	const commentToSearch = await db
 		.select()
 		.from(schema.comments)
 		.where(eq(schema.comments.id, commentId))
+		.limit(1)
+		.then((comments) => {
+			if (comments.length > 0) {
+				const comment = comments[0]
+				return comment
+			} else {
+				return null
+			}
+		})
+
+	if (!commentToSearch) {
+		res.status(404).json({
+			data: 'Comment not found',
+		})
+		return
+	}
+
+	const comment = await db
+		.select()
+		.from(schema.comments)
+		.where(eq(schema.comments.id, commentToSearch.parentId as string))
 		.limit(1)
 		.then((comments) => {
 			if (comments.length > 0) {
@@ -183,7 +204,7 @@ export const getCommentByPostAndComment = handler(async (req: Request, res: Resp
 	const user = await db
 		.select()
 		.from(schema.user)
-		.where(eq(schema.user.id, comment.userId))
+		.where(eq(schema.user.id, commentToSearch.userId))
 		.limit(1)
 		.then((user) => {
 			return user[0]
