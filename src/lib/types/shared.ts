@@ -5,7 +5,10 @@ export type CommentResponse = {
 
 	likesCount?: number
 
-	postTitle?: string | null
+	post: {
+		title: string
+		slug: string
+	}
 	repliedTo?: string | null
 }
 

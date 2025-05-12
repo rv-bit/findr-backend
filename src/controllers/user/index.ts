@@ -100,7 +100,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 
 			if (comments.length > 0) {
 				arrayComments = await Promise.all(
-					comments.map(async (comment: schema.Comments & CommentResponse) => {
+					comments.map(async (comment: schema.Comments) => {
 						const newComment = { ...comment } as Partial<schema.Comments & CommentResponse>
 						delete newComment.userId // removing it from the response
 
@@ -108,9 +108,17 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 							return newComment
 						}
 
-						const post = await db.select().from(schema.posts).where(eq(schema.posts.id, comment.postId)).limit(1)
+						const post = await db
+							.select()
+							.from(schema.posts)
+							.where(eq(schema.posts.id, comment.postId))
+							.limit(1)
+							.then((post) => post[0])
 						if (post) {
-							newComment.postTitle = post[0].title
+							newComment.post = {
+								title: post.title,
+								slug: post.slug,
+							}
 						}
 
 						if (newComment.parentId) {
@@ -232,7 +240,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 			const limit = 10
 			const offset = (Number(page) - 1) * limit
 
-			let arrayComments = [] as Partial<CommentResponse>[]
+			let arrayComments = [] as Partial<schema.Comments & CommentResponse>[]
 			const comments = await db
 				.select()
 				.from(schema.comments)
@@ -243,7 +251,7 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 
 			if (comments.length > 0) {
 				arrayComments = await Promise.all(
-					comments.map(async (comment: schema.Comments & CommentResponse) => {
+					comments.map(async (comment: schema.Comments) => {
 						const newComment = { ...comment } as Partial<schema.Comments & CommentResponse>
 						delete newComment.userId // removing it from the response
 
@@ -251,9 +259,18 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 							return newComment
 						}
 
-						const post = await db.select().from(schema.posts).where(eq(schema.posts.id, comment.postId)).limit(1)
+						const post = await db
+							.select()
+							.from(schema.posts)
+							.where(eq(schema.posts.id, comment.postId))
+							.limit(1)
+							.then((post) => post[0])
+
 						if (post) {
-							newComment.postTitle = post[0].title
+							newComment.post = {
+								title: post.title,
+								slug: post.slug,
+							}
 						}
 
 						if (newComment.parentId) {
