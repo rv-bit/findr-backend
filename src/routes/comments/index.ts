@@ -11,7 +11,7 @@ const router = Router()
 router.get('/:postId', validateRequest(getCommentsSchema) as RequestHandler, controller.getCommentsByPost)
 router.get('/replies/:commentId', validateRequest(getCommentsSchema) as RequestHandler, controller.getRepliesByComment)
 
-router.get('/comment/:commentId', validateRequest(getCommentsSchema) as RequestHandler, controller.getCommentByPostAndComment)
+router.get('/comment/:commentId', validateRequest(getCommentsSchema) as RequestHandler, controller.getParentCommentByComment)
 
 router.post('/insert', authHandler() as RequestHandler, validateRequest(newCommentSchema) as RequestHandler, controller.createComment)
 router.post('/insertReply', authHandler() as RequestHandler, validateRequest(newCommentReplySchema) as RequestHandler, controller.createReply)
