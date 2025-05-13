@@ -9,8 +9,6 @@ import db from '~/services/database'
 import { auth, handler } from '~/lib/index'
 import logger from '~/lib/logger'
 
-import type { PostResponse } from '~/lib/types/shared'
-
 import { getPostByPostId } from '../shared/post'
 
 export const getCommentsByPost = handler(async (req: Request, res: Response) => {
@@ -33,8 +31,12 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 				username: string | null
 				image: string | null
 			}
+			likesCount?: number
+
 			upvoted?: boolean
 			downvoted?: boolean
+
+			replyCount: number
 		}
 	>[]
 
@@ -55,6 +57,8 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 							username: string | null
 							image: string | null
 						}
+
+						likesCount?: number
 
 						upvoted?: boolean
 						downvoted?: boolean
@@ -103,6 +107,12 @@ export const getCommentsByPost = handler(async (req: Request, res: Response) => 
 					newComment.upvoted = upvote ? true : false
 					newComment.downvoted = downvote ? true : false
 				}
+
+				const upvotesCount = await db.$count(schema.comments_upvotes, eq(schema.comments_upvotes.commentId, comment.id))
+				const downvotesCont = await db.$count(schema.comments_downvotes, eq(schema.comments_downvotes.commentId, comment.id))
+
+				const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+				newComment.likesCount = likes
 
 				newComment.replyCount = await db
 					.select()
@@ -190,6 +200,8 @@ export const getParentCommentByComment = handler(async (req: Request, res: Respo
 				image: string | null
 			}
 
+			likesCount?: number
+
 			upvoted?: boolean
 			downvoted?: boolean
 
@@ -238,6 +250,12 @@ export const getParentCommentByComment = handler(async (req: Request, res: Respo
 		newComment.downvoted = downvote ? true : false
 	}
 
+	const upvotesCount = await db.$count(schema.comments_upvotes, eq(schema.comments_upvotes.commentId, comment.id))
+	const downvotesCont = await db.$count(schema.comments_downvotes, eq(schema.comments_downvotes.commentId, comment.id))
+
+	const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+	newComment.likesCount = likes
+
 	newComment.replyCount = await db
 		.select()
 		.from(schema.comments)
@@ -272,8 +290,13 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 				username: string | null
 				image: string | null
 			}
+
+			likesCount?: number
+
 			upvoted?: boolean
 			downvoted?: boolean
+
+			replyCount: number
 		}
 	>[]
 
@@ -294,6 +317,9 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 							username: string | null
 							image: string | null
 						}
+
+						likesCount?: number
+
 						upvoted?: boolean
 						downvoted?: boolean
 
@@ -341,6 +367,12 @@ export const getRepliesByComment = handler(async (req: Request, res: Response) =
 					newReply.upvoted = upvote ? true : false
 					newReply.downvoted = downvote ? true : false
 				}
+
+				const upvotesCount = await db.$count(schema.comments_upvotes, eq(schema.comments_upvotes.commentId, reply.id))
+				const downvotesCont = await db.$count(schema.comments_downvotes, eq(schema.comments_downvotes.commentId, reply.id))
+
+				const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
+				newReply.likesCount = likes
 
 				newReply.replyCount = await db
 					.select()

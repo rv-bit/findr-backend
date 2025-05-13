@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq, sql } from 'drizzle-orm'
 
 import * as schema from '~/services/database/schema'
 import db from '~/services/database'
@@ -136,8 +136,23 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 							}
 						}
 
-						const upvotes = await db.select().from(schema.comments_upvotes).where(eq(schema.comments_upvotes.commentId, comment.id))
-						const downvotes = await db.select().from(schema.comments_downvotes).where(eq(schema.comments_downvotes.commentId, comment.id))
+						const upvote = await db
+							.select()
+							.from(schema.comments_upvotes)
+							.where(and(eq(schema.comments_upvotes.commentId, comment.id), eq(schema.comments_upvotes.userId, userIdString)))
+							.limit(1)
+							.then((upvotes) => {
+								return upvotes[0]
+							})
+
+						const downvote = await db
+							.select()
+							.from(schema.comments_downvotes)
+							.where(and(eq(schema.comments_downvotes.commentId, comment.id), eq(schema.comments_downvotes.userId, userIdString)))
+							.limit(1)
+							.then((downvotes) => {
+								return downvotes[0]
+							})
 
 						const upvotesCount = await db.$count(schema.comments_upvotes, eq(schema.comments_upvotes.commentId, comment.id))
 						const downvotesCont = await db.$count(schema.comments_downvotes, eq(schema.comments_downvotes.commentId, comment.id))
@@ -145,8 +160,8 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 						const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
 						newComment.likesCount = likes
 
-						newComment.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
-						newComment.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
+						newComment.upvoted = upvote ? true : false
+						newComment.downvoted = downvote ? true : false
 
 						return newComment
 					})
@@ -159,8 +174,23 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 						const newPost = { ...post } as Partial<schema.Posts & PostResponse>
 						delete newPost.userId
 
-						const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
-						const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
+						const upvote = await db
+							.select()
+							.from(schema.upvotes)
+							.where(and(eq(schema.upvotes.postId, post.id), eq(schema.upvotes.userId, userIdString)))
+							.limit(1)
+							.then((upvotes) => {
+								return upvotes[0]
+							})
+
+						const downvote = await db
+							.select()
+							.from(schema.downvotes)
+							.where(and(eq(schema.downvotes.postId, post.id), eq(schema.downvotes.userId, userIdString)))
+							.limit(1)
+							.then((downvotes) => {
+								return downvotes[0]
+							})
 
 						const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
 						const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
@@ -171,8 +201,8 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 						newPost.likesCount = likes
 						newPost.commentsCount = comments.length
 
-						newPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
-						newPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
+						newPost.upvoted = upvote ? true : false
+						newPost.downvoted = downvote ? true : false
 						return newPost
 					})
 				)
@@ -208,8 +238,23 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 						const newPost = { ...post } as Partial<schema.Posts & PostResponse>
 						delete newPost.userId
 
-						const upvotes = await db.select().from(schema.upvotes).where(eq(schema.upvotes.postId, post.id))
-						const downvotes = await db.select().from(schema.downvotes).where(eq(schema.downvotes.postId, post.id))
+						const upvote = await db
+							.select()
+							.from(schema.upvotes)
+							.where(and(eq(schema.upvotes.postId, post.id), eq(schema.upvotes.userId, userIdString)))
+							.limit(1)
+							.then((upvotes) => {
+								return upvotes[0]
+							})
+
+						const downvote = await db
+							.select()
+							.from(schema.downvotes)
+							.where(and(eq(schema.downvotes.postId, post.id), eq(schema.downvotes.userId, userIdString)))
+							.limit(1)
+							.then((downvotes) => {
+								return downvotes[0]
+							})
 
 						const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
 						const downvotesCont = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
@@ -220,8 +265,8 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 						newPost.likesCount = likes
 						newPost.commentsCount = comments.length
 
-						newPost.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
-						newPost.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
+						newPost.upvoted = upvote ? true : false
+						newPost.downvoted = downvote ? true : false
 						return newPost
 					})
 				)
@@ -288,8 +333,23 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 							}
 						}
 
-						const upvotes = await db.select().from(schema.comments_upvotes).where(eq(schema.comments_upvotes.commentId, comment.id))
-						const downvotes = await db.select().from(schema.comments_downvotes).where(eq(schema.comments_downvotes.commentId, comment.id))
+						const upvote = await db
+							.select()
+							.from(schema.comments_upvotes)
+							.where(and(eq(schema.comments_upvotes.commentId, comment.id), eq(schema.comments_upvotes.userId, userIdString)))
+							.limit(1)
+							.then((upvotes) => {
+								return upvotes[0]
+							})
+
+						const downvote = await db
+							.select()
+							.from(schema.comments_downvotes)
+							.where(and(eq(schema.comments_downvotes.commentId, comment.id), eq(schema.comments_downvotes.userId, userIdString)))
+							.limit(1)
+							.then((downvotes) => {
+								return downvotes[0]
+							})
 
 						const upvotesCount = await db.$count(schema.comments_upvotes, eq(schema.comments_upvotes.commentId, comment.id))
 						const downvotesCont = await db.$count(schema.comments_downvotes, eq(schema.comments_downvotes.commentId, comment.id))
@@ -297,8 +357,8 @@ export const getUserData = handler(async (req: Request, res: Response) => {
 						const likes = (upvotesCount || 0) - (downvotesCont || 0) // Calculate the likes count
 						newComment.likesCount = likes
 
-						newComment.upvoted = upvotes.some((upvote) => upvote.userId === userIdString) || false
-						newComment.downvoted = downvotes.some((downvote) => downvote.userId === userIdString) || false
+						newComment.upvoted = upvote ? true : false
+						newComment.downvoted = downvote ? true : false
 
 						return newComment
 					})
