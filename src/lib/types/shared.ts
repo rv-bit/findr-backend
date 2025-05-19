@@ -1,23 +1,18 @@
 export type CommentResponse = {
-	id: string
-	postId: string
-	text: string | null
-	userId: string
-	createdAt: Date
-	updatedAt: Date
+	// Additional fields not from the database schema
+	upvoted?: boolean
+	downvoted?: boolean
 
-	postTitle?: string | null
+	likesCount?: number
+
+	post: {
+		title: string
+		slug: string
+	}
+	repliedTo?: string | null
 }
 
 export type PostResponse = {
-	id: string
-	slug: string | null
-	title: string | null
-	content: string | null
-	userId: string
-	createdAt: Date
-	updatedAt: Date
-
 	// Additional fields not from the database schema
 	likesCount?: number
 	commentsCount?: number

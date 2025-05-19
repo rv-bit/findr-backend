@@ -11,7 +11,7 @@ import { eq } from 'drizzle-orm'
 import config from '~/config'
 
 import * as schema from '~/services/database/schema'
-import db from '~/services/database/database'
+import db from '~/services/database'
 
 import { sendEmail } from '~/services/email/service'
 import { reactResetPasswordEmail } from '~/services/email/templates'
@@ -357,3 +357,5 @@ export const auth = betterAuth({
 		}),
 	],
 })
+
+export type Session = typeof auth.$Infer.Session

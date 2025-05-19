@@ -4,13 +4,17 @@ import { fromNodeHeaders } from 'better-auth/node'
 import { nanoid } from 'nanoid'
 
 import * as schema from '~/services/database/schema'
-import db from '~/services/database/database'
+import db from '~/services/database'
 
-import { auth, handler } from '~/lib/index'
+import { auth, type Session } from '~/lib/auth'
+
+import { handler } from '~/lib/index'
 import logger from '~/lib/logger'
 
-import type { NewPostSchema } from '~/routes/post/schema'
 import type { PostResponse } from '~/lib/types/shared'
+import type { NewPostSchema } from '~/routes/post/schema'
+
+import { getPostByPostId } from '../shared/post'
 
 export const getAllPosts = handler(async (req: Request, res: Response) => {
 	const session = await auth.api.getSession({
@@ -26,10 +30,11 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 	const offset = (Number(page) - 1) * limit
 
 	let arrayPosts = [] as Partial<
-		PostResponse & {
-			username: string | null
-			avatar: string | null
-		}
+		schema.Posts &
+			PostResponse & {
+				username: string | null
+				avatar: string | null
+			}
 	>[]
 	const posts = await db
 		.select()
@@ -39,14 +44,15 @@ export const getAllPosts = handler(async (req: Request, res: Response) => {
 
 	if (posts.length > 0) {
 		arrayPosts = await Promise.all(
-			posts.map(async (post: PostResponse) => {
+			posts.map(async (post: schema.Posts & PostResponse) => {
 				const newPost = { ...post } as Partial<
-					PostResponse & {
-						user: {
-							username: string | null
-							image: string | null
+					schema.Posts &
+						PostResponse & {
+							user: {
+								username: string | null
+								image: string | null
+							}
 						}
-					}
 				>
 				delete newPost.userId
 
@@ -119,12 +125,7 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 		},
 	})
 
-	const post = await db
-		.select()
-		.from(schema.posts)
-		.where(eq(schema.posts.id, postId))
-		.limit(1)
-		.then((post) => post[0])
+	const post = await getPostByPostId(postId, session)
 
 	if (!post) {
 		logger.error('Failed to get post', { post })
@@ -136,80 +137,8 @@ export const getPostById = handler(async (req: Request, res: Response) => {
 		return
 	}
 
-	const copyPost = { ...post } as Partial<
-		PostResponse & {
-			user: {
-				username: string | null
-				image: string | null
-				about_description: string | null
-
-				postsCount: number
-				commentsCount: number
-
-				createdAt: Date | null
-			}
-		}
-	>
-
-	const upvotesCount = await db.$count(schema.upvotes, eq(schema.upvotes.postId, post.id))
-	const downvotesCount = await db.$count(schema.downvotes, eq(schema.downvotes.postId, post.id))
-
-	const likes = (upvotesCount || 0) - (downvotesCount || 0) // Calculate the likes count
-	const comments = await db.select().from(schema.comments).where(eq(schema.comments.postId, post.id))
-
-	copyPost.likesCount = likes
-	copyPost.commentsCount = comments.length
-
-	const user = await db
-		.select()
-		.from(schema.user)
-		.where(eq(schema.user.id, post.userId))
-		.limit(1)
-		.then((user) => user[0])
-
-	const commentsCount = await db.$count(schema.comments, eq(schema.comments.userId, user.id))
-	const postsCount = await db.$count(schema.posts, eq(schema.posts.userId, user.id))
-
-	if (session && session.user) {
-		const userIdString = session.user.id
-
-		const upvoted = await db
-			.select()
-			.from(schema.upvotes)
-			.where(and(eq(schema.upvotes.postId, postId), eq(schema.upvotes.userId, userIdString)))
-			.limit(1)
-			.then((upvotes) => {
-				return upvotes[0]
-			})
-
-		const downvoted = await db
-			.select()
-			.from(schema.downvotes)
-			.where(and(eq(schema.downvotes.postId, postId), eq(schema.downvotes.userId, userIdString)))
-			.limit(1)
-			.then((downvotes) => {
-				return downvotes[0]
-			})
-
-		copyPost.upvoted = upvoted ? true : false
-		copyPost.downvoted = downvoted ? true : false
-	}
-
-	delete copyPost.userId
-
-	copyPost.user = {
-		username: user.username,
-		image: user.image,
-		about_description: user.about_description,
-
-		postsCount: postsCount,
-		commentsCount: commentsCount,
-
-		createdAt: user.createdAt,
-	}
-
 	res.status(200).json({
-		data: copyPost,
+		data: post,
 	})
 })
 
