@@ -1,6 +1,7 @@
-import { auth } from '~/utils/auth'
-import { fromNodeHeaders } from 'better-auth/node'
 import type { Request, Response, NextFunction } from 'express'
+import { fromNodeHeaders } from 'better-auth/node'
+
+import { auth } from '~/lib/auth'
 
 export function notFoundHandler(req: Request, res: Response, next: NextFunction) {
 	const message = `Not Found - ${req.originalUrl}`
@@ -25,9 +26,9 @@ export const authHandler = () => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })
 
-		if (!session) {
-			return res.status(400).json({
-				error: 'No session found',
+		if (!session || !session.user) {
+			return res.status(401).json({
+				error: 'Unauthorized',
 			})
 		}
 

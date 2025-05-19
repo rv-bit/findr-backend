@@ -1,0 +1,1 @@
+ALTER TABLE `comments` MODIFY COLUMN `text` longtext NOT NULL;

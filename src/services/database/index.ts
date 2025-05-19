@@ -10,6 +10,7 @@ const pool = createPool({
 })
 
 const db = drizzle({
+	logger: process.env.NODE_ENV === 'development' ? true : false,
 	client: pool,
 })
 

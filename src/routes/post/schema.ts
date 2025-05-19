@@ -1,15 +1,20 @@
-import { JoiXss } from '~/utils/utils'
+import Joi from 'joi'
 
 export interface NewPostSchema {
-	slug?: string
+	slug: string
 	title: string
 	content: string
 	userId: string
 }
 
-export const newPostSchema = JoiXss.object({
-	slug: JoiXss.string(),
-	title: JoiXss.string().required().xss(),
-	content: JoiXss.string().required().xss(),
-	userId: JoiXss.string().required(),
+export const newPostSchema = Joi.object({
+	slug: Joi.string().required(),
+	title: Joi.string().required().max(100),
+	content: Joi.string().required(),
+	userId: Joi.string().required(),
+})
+
+export const editPostSchema = Joi.object({
+	content: Joi.string().required(),
+	userId: Joi.string().required(),
 })

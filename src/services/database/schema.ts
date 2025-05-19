@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, text, int, timestamp, boolean, uniqueIndex, index, longtext } from 'drizzle-orm/mysql-core'
+import { mysqlTable, varchar, text, timestamp, boolean, uniqueIndex, index, longtext } from 'drizzle-orm/mysql-core'
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm'
 
 const generateUniqueString = (length: number = 12): string => {
@@ -19,11 +19,12 @@ export const user = mysqlTable('user', {
 	image: text('image'),
 	createdAt: timestamp('created_at').notNull(),
 	updatedAt: timestamp('updated_at').notNull(),
-	username: varchar('username', { length: 255 }).unique(),
 	role: text('role'),
 	banned: boolean('banned'),
 	banReason: text('ban_reason'),
 	banExpires: timestamp('ban_expires'),
+	username: varchar('username', { length: 255 }).unique(),
+	displayUsername: text('display_username'),
 	twoFactorEnabled: boolean('two_factor_enabled'),
 	about_description: text('about_description'),
 })
@@ -38,7 +39,7 @@ export const session = mysqlTable('session', {
 	userAgent: text('user_agent'),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: 'cascade' }),
 	impersonatedBy: text('impersonated_by'),
 })
 
@@ -48,7 +49,7 @@ export const account = mysqlTable('account', {
 	providerId: text('provider_id').notNull(),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: 'cascade' }),
 	accessToken: text('access_token'),
 	refreshToken: text('refresh_token'),
 	idToken: text('id_token'),
@@ -75,33 +76,34 @@ export const twoFactor = mysqlTable('two_factor', {
 	backupCodes: text('backup_codes').notNull(),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: 'cascade' }),
 })
 
-export const posts = mysqlTable(
-	'posts',
-	{
-		id: int().primaryKey().autoincrement(),
-		slug: varchar({ length: 256 }).$default(() => generateUniqueString(16)),
-		title: varchar({ length: 256 }),
-		content: longtext(),
-		userId: varchar('user_id', { length: 36 })
-			.notNull()
-			.references(() => user.id),
-
-		createdAt: timestamp('created_at').notNull(),
-		updatedAt: timestamp('updated_at').notNull(),
-	},
-	(table) => [uniqueIndex('slug_idx').on(table.slug), index('title_idx').on(table.title)]
-)
-
-export const comments = mysqlTable('comments', {
-	id: int().primaryKey().autoincrement(),
-	postId: int('post_id').references(() => posts.id),
-	text: varchar({ length: 256 }),
+export const posts = mysqlTable('posts', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	slug: varchar({ length: 256 }).notNull(),
+	title: varchar({ length: 256 }).notNull(),
+	content: longtext().notNull(),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
 		.references(() => user.id),
+
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at').notNull(),
+})
+
+export const comments = mysqlTable('comments', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	postId: varchar('post_id', { length: 36 })
+		.notNull()
+		.references(() => posts.id, { onDelete: 'cascade' }),
+	parentId: varchar('parent_id', { length: 36 }), // self-referencing
+	text: longtext().notNull(),
+	userId: varchar('user_id', { length: 36 })
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at').notNull(),
 })
 
 export const followers = mysqlTable(
@@ -121,11 +123,44 @@ export const followers = mysqlTable(
 	]
 )
 
-export const likes = mysqlTable('likes', {
-	id: int('id').primaryKey().autoincrement(),
-	postId: int('postId')
+export const upvotes = mysqlTable('upvotes', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	postId: varchar('postId', { length: 36 })
 		.notNull()
-		.references(() => posts.id),
+		.references(() => posts.id, { onDelete: 'cascade' }),
+	userId: varchar('user_id', { length: 36 })
+		.notNull()
+		.references(() => user.id),
+	createdAt: timestamp('createdAt').notNull(),
+})
+
+export const downvotes = mysqlTable('downvotes', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	postId: varchar('postId', { length: 36 })
+		.notNull()
+		.references(() => posts.id, { onDelete: 'cascade' }),
+	userId: varchar('user_id', { length: 36 })
+		.notNull()
+		.references(() => user.id),
+	createdAt: timestamp('createdAt').notNull(),
+})
+
+export const comments_upvotes = mysqlTable('comments_upvotes', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	commentId: varchar('commentId', { length: 36 })
+		.notNull()
+		.references(() => comments.id, { onDelete: 'cascade' }),
+	userId: varchar('user_id', { length: 36 })
+		.notNull()
+		.references(() => user.id),
+	createdAt: timestamp('createdAt').notNull(),
+})
+
+export const comments_downvotes = mysqlTable('comments_downvotes', {
+	id: varchar('id', { length: 36 }).primaryKey(),
+	commentId: varchar('commentId', { length: 36 })
+		.notNull()
+		.references(() => comments.id, { onDelete: 'cascade' }),
 	userId: varchar('user_id', { length: 36 })
 		.notNull()
 		.references(() => user.id),
@@ -133,7 +168,7 @@ export const likes = mysqlTable('likes', {
 })
 
 export const messages = mysqlTable('messages', {
-	id: int('id').primaryKey().autoincrement(),
+	id: varchar('id', { length: 36 }).primaryKey(),
 	senderId: varchar('senderId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
@@ -141,27 +176,28 @@ export const messages = mysqlTable('messages', {
 		.notNull()
 		.references(() => user.id),
 	messageText: text('messageText').notNull(),
-	sentAt: timestamp('sentAt').notNull(),
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at').notNull(),
 	isRead: boolean('isRead').default(false),
 })
 
 export const notifications = mysqlTable('notifications', {
-	id: int('id').primaryKey().autoincrement(),
+	id: varchar('id', { length: 36 }).primaryKey(),
 	userId: varchar('userId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
 	type: varchar('type', { length: 50 }).notNull(), // E.g., 'like', 'comment', 'follow'
-	relatedUserId: varchar('relatedUserId', { length: 36 }), // If the notification is related to a user
-	postId: int('postId').references(() => posts.id), // If the notification is related to a post
+	relatedUserId: varchar('relatedUserId', { length: 36 }).references(() => user.id), // If the notification is related to another user
+	postId: varchar('postId', { length: 36 }).references(() => posts.id, { onDelete: 'cascade' }), // If the notification is related to a post
 	createdAt: timestamp('createdAt').notNull(),
 	isRead: boolean('isRead').default(false),
 })
 
 export const shares = mysqlTable('shares', {
-	id: int('id').primaryKey().autoincrement(),
-	postId: int('postId')
+	id: varchar('id', { length: 36 }).primaryKey(),
+	postId: varchar('postId', { length: 36 })
 		.notNull()
-		.references(() => posts.id),
+		.references(() => posts.id, { onDelete: 'cascade' }),
 	userId: varchar('userId', { length: 36 })
 		.notNull()
 		.references(() => user.id),
@@ -178,11 +214,26 @@ type InsertSession = InferInsertModel<typeof session>
 type InsertAccount = InferInsertModel<typeof account>
 type InsertVerification = InferInsertModel<typeof verification>
 
+type Posts = InferSelectModel<typeof posts>
+type InsertPosts = InferInsertModel<typeof posts>
+
+type Comments = InferSelectModel<typeof comments>
+type InsertComments = InferInsertModel<typeof comments>
+
 type Followers = InferSelectModel<typeof followers>
 type InsertFollowers = InferInsertModel<typeof followers>
 
-type Likes = InferSelectModel<typeof likes>
-type InsertLikes = InferInsertModel<typeof likes>
+type Upvote = InferSelectModel<typeof upvotes>
+type InsertUpvote = InferInsertModel<typeof upvotes>
+
+type Downvote = InferSelectModel<typeof downvotes>
+type InsertDownvote = InferInsertModel<typeof downvotes>
+
+type CommentsUpvote = InferSelectModel<typeof comments_upvotes>
+type InsertCommentsUpvote = InferInsertModel<typeof comments_upvotes>
+
+type CommentsDownvote = InferSelectModel<typeof comments_downvotes>
+type InsertCommentsDownvote = InferInsertModel<typeof comments_downvotes>
 
 type Messages = InferSelectModel<typeof messages>
 type InsertMessages = InferInsertModel<typeof messages>
@@ -197,7 +248,15 @@ export type { User, Session, Account, Verification }
 export type { InsertUser, InsertSession, InsertAccount, InsertVerification }
 
 export type { Followers, InsertFollowers }
-export type { Likes, InsertLikes }
+export type { Posts, InsertPosts }
+export type { Comments, InsertComments }
+
+export type { Upvote, InsertUpvote }
+export type { Downvote, InsertDownvote }
+
+export type { CommentsUpvote, InsertCommentsUpvote }
+export type { CommentsDownvote, InsertCommentsDownvote }
+
 export type { Messages, InsertMessages }
 export type { Notifications, InsertNotifications }
 export type { Shares, InsertShares }
