@@ -13,14 +13,14 @@ This repository contains the backend systems for Findr, a feature-rich blogging 
 - **Database Management with Drizzle ORM:** Manages database interactions efficiently and type-safely using Drizzle ORM, providing a powerful and flexible way to interact with your SQL database.
 
 ## Stack
-- **Better Auth**
-- **Express.js**
-- **Bun**
-- **Nodemailer**
-- **Resend (for SMTP)**
+- [Better Auth](https://www.better-auth.com/)
+- [Express.js](https://expressjs.com/)
+- [Bun](https://bun.sh/)
+- [Nodemailer](https://nodemailer.com/)
+- [Resend (for SMTP)](https://resend.com/)
+  - [React Email](https://react.email/)
+- [Drizzle ORM)[https://orm.drizzle.team/]
 - **AWS S3 (via Bun's client)**
-- **Drizzle ORM**
-- **SQL Database (e.g. MySQL prefered)**
 
 ### Prerequisites
 
